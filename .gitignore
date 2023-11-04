@@ -1,1 +1,8 @@
+# Python stuff
 env/
+
+# HDL stuff
+sim/*.out
+
+# Misc.
+.DS_Store
