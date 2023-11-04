@@ -12,15 +12,15 @@ module power_spectrum (
   
   input wire [31:0] fft_data_in,
   input wire fft_valid_in,
-  output wire fft_ready_out,
+  output logic fft_ready_out,
 
   input wire power_ready_in,
-  output wire power_valid_out,
-  output wire [31:0] power_data_out,
+  output logic power_valid_out,
+  output logic [31:0] power_data_out
 );
 
-  logic [15:0] real_in, imag_in;
-  logic [31:0] real_square, imag_square;
+  logic signed [15:0] real_in, imag_in;
+  logic signed [31:0] real_square, imag_square;
   logic square_valid;
 
   assign real_in = fft_data_in[31:16];
@@ -32,6 +32,7 @@ module power_spectrum (
       square_valid <= 0;
       power_valid_out <= 0;
     end else if (power_ready_in) begin
+      // Only advance the pipeline if the downstream module is ready
       fft_ready_out <= 1;
       // Stage 1: compute squares
       real_square <= real_in * real_in;

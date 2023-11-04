@@ -2,7 +2,8 @@
 `default_nettype none
 
 module feature_extractor #(
-  parameter NUM_FILTERS = 26
+  parameter NUM_FILTERS = 26,
+  parameter N_FFT = 512,
 ) (
   input wire clk_in,
   input wire rst_in,
@@ -10,11 +11,11 @@ module feature_extractor #(
 
   input wire [31:0] fft_data_in,
   input wire fft_valid_in,
-  output wire fft_ready_out,
+  output logic fft_ready_out,
   
   input wire feature_ready_in,
-  output wire feature_valid_out,
-  output wire [31:0] feature_data_out
+  output logic feature_valid_out,
+  output logic [31:0] feature_data_out
 );
 
   logic power_ready, power_valid;
