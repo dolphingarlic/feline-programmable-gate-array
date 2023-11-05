@@ -37,15 +37,15 @@ module mel_filterbank #(
   generate;
     for (i = 0; i < NUM_FILTERS; i = i + 1) begin
       localparam PEAK_MEL = FREQ_LOWERBOUND_MEL + (i + 1) * MEL_SPACING;
-      localparam START_HERTZ = $exp(PEAK_MEL - MEL_SPACING) - 700;
-      localparam PEAK_HERTZ = $exp(PEAK_MEL) - 700;
-      localparam STOP_HERTZ = $exp(PEAK_MEL + MEL_SPACING) - 700;
+      localparam START_HZ = $exp(PEAK_MEL - MEL_SPACING) - 700;
+      localparam PEAK_HZ = $exp(PEAK_MEL) - 700;
+      localparam STOP_HZ = $exp(PEAK_MEL + MEL_SPACING) - 700;
 
       triangular_filter #(
         .N_FFT(N_FFT),
-        .START($floor((N_FFT + 1) * START_HERTZ / SAMPLE_RATE_HZ)),
-        .PEAK($floor((N_FFT + 1) * PEAK_HERTZ / SAMPLE_RATE_HZ)),
-        .STOP($floor((N_FFT + 1) * STOP_HERTZ / SAMPLE_RATE_HZ))
+        .START($floor((N_FFT + 1) * START_HZ / SAMPLE_RATE_HZ)),
+        .PEAK($floor((N_FFT + 1) * PEAK_HZ / SAMPLE_RATE_HZ)),
+        .STOP($floor((N_FFT + 1) * STOP_HZ / SAMPLE_RATE_HZ))
       ) triangular_filter_inst (
         .clk_in(clk_in),
         .rst_in(rst_in),
@@ -53,7 +53,7 @@ module mel_filterbank #(
         .power_in(power_data_in),
         .k_in(k_curr),
         // .filtered_out(filter_buffer[i])
-        .filtered_out(filtered_data_out[i])
+        .filtered_out(filtered_data_out[i]) // TODO: fixme
       );
     end
   endgenerate
