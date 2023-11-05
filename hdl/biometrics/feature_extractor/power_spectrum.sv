@@ -12,16 +12,18 @@ module power_spectrum (
   
   input wire [31:0] fft_data_in,
   input wire fft_valid_in,
+  input wire fft_last_in,
   output logic fft_ready_out,
 
   input wire power_ready_in,
+  output logic power_last_out,
   output logic power_valid_out,
   output logic [31:0] power_data_out
 );
 
   logic signed [15:0] real_in, imag_in;
   logic signed [31:0] real_square, imag_square;
-  logic square_valid;
+  logic square_valid, last_buffer;
 
   assign real_in = fft_data_in[31:16];
   assign imag_in = fft_data_in[15:0];
@@ -30,6 +32,7 @@ module power_spectrum (
     if (rst_in) begin
       fft_ready_out <= 0;
       square_valid <= 0;
+      last_buffer <= 0;
       power_valid_out <= 0;
     end else if (power_ready_in) begin
       // Only advance the pipeline if the downstream module is ready
@@ -38,9 +41,11 @@ module power_spectrum (
       real_square <= real_in * real_in;
       imag_square <= imag_in * imag_in;
       square_valid <= fft_valid_in;
+      last_buffer <= fft_last_in;
       // Stage 2: compute sum
       power_data_out <= real_square + imag_square;
       power_valid_out <= square_valid;
+      power_last_out <= last_buffer;
     end else begin
       fft_ready_out <= 0;
     end

@@ -6,10 +6,10 @@ module power_spectrum_tb;
   // Input logics
   logic clk_in, rst_in;
   logic signed [15:0] real_in, imag_in;
-  logic fft_valid_in, power_ready_in;
+  logic fft_valid_in, fft_last_in, power_ready_in;
   // Output logics
-  logic power_valid_out, fft_ready_out;
-  logic [31:0] power_out;
+  logic power_last_out, power_valid_out, fft_ready_out;
+  logic [31:0] power_data_out;
 
   power_spectrum uut (
     .clk_in(clk_in),
@@ -17,11 +17,13 @@ module power_spectrum_tb;
 
     .fft_data_in({real_in, imag_in}),
     .fft_valid_in(fft_valid_in),
+    .fft_last_in(fft_last_in),
     .fft_ready_out(fft_ready_out),
     
     .power_ready_in(power_ready_in),
+    .power_last_out(power_last_out),
     .power_valid_out(power_valid_out),
-    .power_data_out(power_out)
+    .power_data_out(power_data_out)
   );
 
   always begin
@@ -40,6 +42,7 @@ module power_spectrum_tb;
     real_in = 0;
     imag_in = 0;
     fft_valid_in = 0;
+    fft_last_in = 0;
     power_ready_in = 0;
 
     // Wait a lil bit and reset
