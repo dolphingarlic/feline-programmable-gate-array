@@ -28,26 +28,32 @@ module power_spectrum (
   assign real_in = fft_data_in[31:16];
   assign imag_in = fft_data_in[15:0];
 
+  // Only advance the pipeline if the downstream stages are ready
+  logic stall_1, stall_2;
+  assign stall_2 = !power_ready_in && power_valid_out;
+  assign stall_1 = stall_2 && square_valid;
+
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
       fft_ready_out <= 0;
       square_valid <= 0;
       last_buffer <= 0;
       power_valid_out <= 0;
-    end else if (power_ready_in) begin
-      // Only advance the pipeline if the downstream module is ready
-      fft_ready_out <= 1;
-      // Stage 1: compute squares
-      real_square <= real_in * real_in;
-      imag_square <= imag_in * imag_in;
-      square_valid <= fft_valid_in;
-      last_buffer <= fft_last_in;
-      // Stage 2: compute sum
-      power_data_out <= real_square + imag_square;
-      power_valid_out <= square_valid;
-      power_last_out <= last_buffer;
     end else begin
-      fft_ready_out <= 0;
+      // Stage 1: compute squares
+      fft_ready_out <= ~stall_1;
+      if (!stall_1) begin
+        real_square <= real_in * real_in;
+        imag_square <= imag_in * imag_in;
+        square_valid <= fft_valid_in;
+        last_buffer <= fft_last_in;
+      end
+      // Stage 2: compute sum
+      if (!stall_2) begin
+        power_data_out <= real_square + imag_square;
+        power_valid_out <= square_valid;
+        power_last_out <= last_buffer;
+      end
     end
   end
 
