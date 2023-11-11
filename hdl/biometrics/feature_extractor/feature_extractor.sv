@@ -78,13 +78,24 @@ module feature_extractor #(
   //////////////////////
   // BASE-2 LOGARITHM //
   //////////////////////
-  logic [NUM_FILTERS-1:0] log_ready;
-  logic log_valid;
+  logic log_ready, log_valid;
   logic [15:0] log_data [NUM_FILTERS-1:0];
 
+  logarithm logarithm_inst (
+    .clk_in(clk_in),
+    .rst_in(rst_in),
+
+    .filtered_data_in(filtered_data[0]),
+    .filtered_valid_in(filtered_valid),
+    .filtered_ready_out(filtered_ready),
+
+    .log_ready_in(log_ready),
+    .log_valid_out(log_valid),
+    .log_data_out(log_data[0])
+  );
   generate
     genvar i;
-    for (i = 0; i < NUM_FILTERS; i = i + 1) begin
+    for (i = 1; i < NUM_FILTERS; i = i + 1) begin
       logarithm logarithm_inst (
         .clk_in(clk_in),
         .rst_in(rst_in),
@@ -94,7 +105,7 @@ module feature_extractor #(
         .filtered_ready_out(filtered_ready),
 
         .log_ready_in(log_ready),
-        .log_valid_out(log_valid[i]),
+        .log_valid_out(),
         .log_data_out(log_data[i])
       );
     end
