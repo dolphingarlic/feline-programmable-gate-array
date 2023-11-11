@@ -40,7 +40,7 @@ module power_spectrum (
       last_buffer <= 0;
       power_valid_out <= 0;
     end else begin
-      // Stage 1: compute squares
+      // Stage 1: compute squares of components
       fft_ready_out <= ~stall_1;
       if (!stall_1) begin
         real_square <= real_in * real_in;
@@ -48,7 +48,7 @@ module power_spectrum (
         square_valid <= fft_valid_in;
         last_buffer <= fft_last_in;
       end
-      // Stage 2: compute sum
+      // Stage 2: compute sum of squares
       if (!stall_2) begin
         power_data_out <= real_square + imag_square;
         power_valid_out <= square_valid;

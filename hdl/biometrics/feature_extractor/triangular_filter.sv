@@ -22,6 +22,7 @@ module triangular_filter #(
   output logic [31:0] filtered_out
 );
 
+  // Get around division by multiplying instead
   localparam INV_LOWER_BANDWIDTH = (1 << INV_PRECISION) / (PEAK - START);
   localparam INV_UPPER_BANDWIDTH = (1 << INV_PRECISION) / (STOP - PEAK);
 
@@ -33,7 +34,7 @@ module triangular_filter #(
       power_buffer <= 0;
       filtered_out <= 0;
     end else begin
-      // Stage 1
+      // Stage 1: compute scale factor
       power_buffer <= power_in[31:INV_PRECISION];
       if (k_in < START || k_in > STOP) scale_factor <= 0;
       else if (k_in < PEAK) begin
@@ -41,7 +42,7 @@ module triangular_filter #(
       end else begin
         scale_factor <= (STOP - k_in) * INV_UPPER_BANDWIDTH;
       end
-      // Stage 2
+      // Stage 2: do the "division" (through multiplication)
       filtered_out <= power_buffer * scale_factor;
     end
   end
