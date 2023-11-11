@@ -60,7 +60,7 @@ module triangular_filter_tb;
     // Test case 2: sine wave
     for (int i = 0; i < 512; i = i + 1) begin
       k_in = i;
-      power_in = 32'hDEADBEEF * $sin(i);
+      power_in = 32'hDEADBEEF * $sin(i / 5.0) * $sin(i / 5.0);
       #10;
     end
     power_in = 0;

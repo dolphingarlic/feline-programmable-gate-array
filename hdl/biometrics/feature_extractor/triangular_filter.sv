@@ -25,7 +25,7 @@ module triangular_filter #(
   localparam INV_LOWER_BANDWIDTH = (1 << INV_PRECISION) / (PEAK - START);
   localparam INV_UPPER_BANDWIDTH = (1 << INV_PRECISION) / (STOP - PEAK);
 
-  logic [31:0] scale_factor, power_buffer;
+  logic [31-INV_PRECISION:0] scale_factor, power_buffer;
 
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
@@ -34,7 +34,7 @@ module triangular_filter #(
       filtered_out <= 0;
     end else begin
       // Stage 1
-      power_buffer <= (power_in >> INV_PRECISION);
+      power_buffer <= power_in[31:INV_PRECISION];
       if (k_in < START || k_in > STOP) scale_factor <= 0;
       else if (k_in < PEAK) begin
         scale_factor <= (k_in - START) * INV_LOWER_BANDWIDTH;
