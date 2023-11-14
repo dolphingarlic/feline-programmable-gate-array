@@ -20,6 +20,18 @@ dct:
 	./remote/r.py build.py xsim_run.tcl $(SOURCES)
 	gtkwave dump.vcd
 
+.PHONY: uart_tick_generator
+uart_tick_generator:
+	iverilog -g2012 -o sim/uart_tick_generator.out sim/uart_tick_generator_tb.sv hdl/common/uart_tick_generator.sv
+	vvp sim/uart_tick_generator.out
+	gtkwave uart_tick_generator.vcd
+
+.PHONY: uart_rx
+uart_rx:
+	iverilog -g2012 -o sim/uart_rx.out sim/uart_rx_tb.sv hdl/common/uart_rx.sv hdl/common/uart_tick_generator.sv
+	vvp sim/uart_rx.out
+	gtkwave uart_rx.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
