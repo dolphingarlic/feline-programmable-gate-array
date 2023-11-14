@@ -33,8 +33,8 @@ module dct #(
   logic [15:0] log_data_buffer [NUM_FILTERS-1:0];
 
   // FFT IP module
-  logic [31:0] fft_data_in, fft_data_out;
-  logic fft_valid, fft_last, fft_ready;
+  logic [31:0] fft_data_in = 32'b0, fft_data_out;
+  logic fft_valid = 1'b0, fft_last = 1'b0, fft_ready;
   xfft_128 xfft_128_inst (
     .aclk(clk_in),
     .s_axis_data_tdata(fft_data_in),

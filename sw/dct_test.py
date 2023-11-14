@@ -6,9 +6,11 @@ np.set_printoptions(precision=3, linewidth=np.inf)
 
 n = 26
 
-for _ in range(5):
+# for _ in range(5):
+for _ in range(1):
     # Simulate a mel filtered result
-    x = 36 * np.random.rand(n) - 16
+    # x = 36 * np.random.rand(n) - 16
+    x = np.linspace(-104, 96, 26)
     print('INPUT:')
     print(x)
     print('-----')
@@ -28,7 +30,8 @@ for _ in range(5):
     print('ZERO APPENDED:')
     fft_append = fft.fft(u)[:16].real
     plt.plot(np.linspace(0, 1, 16), fft_append, label='Zero padded')
-    print(fft_append)
+    print(fft_append * 2)
+    print(fft.fft(u)[:16].imag)
     print('-----')
 
     plt.legend(loc="upper left")
