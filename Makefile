@@ -32,6 +32,12 @@ uart_tx:
 	vvp sim/uart_tx.out
 	gtkwave uart_tx.vcd
 
+.PHONY: uart_end_to_end
+uart_end_to_end:
+	iverilog -g2012 -o sim/uart_end_to_end.out sim/uart_end_to_end_tb.sv hdl/common/uart_tx.sv hdl/common/uart_rx.sv hdl/common/uart_tick_generator.sv
+	vvp sim/uart_end_to_end.out
+	gtkwave uart_end_to_end.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
