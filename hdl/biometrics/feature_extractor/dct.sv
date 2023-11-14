@@ -9,7 +9,7 @@
  */
 module dct #(
   parameter NUM_FILTERS,
-  parameter N_DCT,
+  parameter N_DCT
 ) (
   input wire clk_in,
   input wire rst_in,
@@ -24,7 +24,7 @@ module dct #(
   output logic dct_last_out
 );
 
-  typedef enum { IDLE=0, FORWARD=1, BACKWARD=2 } dct_state;
+  typedef enum { IDLE=0, FORWARD=1, BACKWARD=2, OUTPUT=3 } dct_state;
   dct_state state;
   assign log_ready_out = (state == IDLE);
 
@@ -32,18 +32,17 @@ module dct #(
   logic insert_zero;
   logic [15:0] log_data_buffer [NUM_FILTERS-1:0];
 
-
   // FFT IP module
   logic [31:0] fft_data_in, fft_data_out;
   logic fft_valid, fft_last, fft_ready;
   xfft_128 xfft_128_inst (
-    .aclk(clk_axi),
+    .aclk(clk_in),
     .s_axis_data_tdata(fft_data_in),
     .s_axis_data_tvalid(fft_valid),
     .s_axis_data_tlast(fft_last),
     .s_axis_data_tready(fft_ready),
-    .s_axis_config_tdata(0),
-    .s_axis_config_tvalid(0),
+    .s_axis_config_tdata(16'b0),
+    .s_axis_config_tvalid(1'b0),
     .s_axis_config_tready(),
     .m_axis_data_tdata(fft_data_out),
     .m_axis_data_tvalid(dct_valid_out),
@@ -52,40 +51,56 @@ module dct #(
   );
   assign dct_data_out = fft_data_out[15:0];
 
-
+  // State machine logic
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
       state <= IDLE;
-
+      fft_last <= 0;
+      fft_valid <= 0;
+      fft_data_in <= 0;
     end else begin
       if (state == IDLE) begin
         if (log_valid_in) begin
+          // Once we receive valid input, store it and start processing it
           state <= FORWARD;
           traversal_idx <= 0;
-          insert_zero <= 0;
           log_data_buffer <= log_data_in;
+
+          // Set the FFT input already on this cycle
+          fft_data_in <= {16'b0, log_data_in[0]};
+          fft_valid <= 1;
+          insert_zero <= fft_ready;
         end
-        // TODO
+      end else if (state == OUTPUT) begin
+        // Wait for a last signal before enabling requests again
+        fft_last <= 0;
+        fft_valid <= 0;
+        if (dct_last_out) state <= IDLE;
       end else begin
         if (insert_zero) begin
           fft_data_in <= 0;
-
-          if (state == FORWARD) begin
-            if (traversal_idx == N_DCT - 1) state <= BACKWARD;
-            else traversal_idx <= traversal_idx + 1;
-          end else begin
-            if (traversal_idx == 0) begin
-              // TODO
-            end else traversal_idx <= traversal_idx - 1;
+          // Advance the processing stage after inserting a zero and the FFT accepts it
+          if (fft_ready) begin
+            if (state == FORWARD) begin
+              if (traversal_idx == N_DCT - 1) state <= BACKWARD;
+              else traversal_idx <= traversal_idx + 1;
+            end else begin
+              if (traversal_idx == 0) begin
+                state <= OUTPUT;
+                fft_last <= 1;
+              end else traversal_idx <= traversal_idx - 1;
+            end
           end
         end else begin
+          // Try insert the filtered value, and zero otherwise
           if (traversal_idx < NUM_FILTERS) begin
             fft_data_in <= {16'b0, log_data_buffer[traversal_idx]};
           end else begin
             fft_data_in <= 0;
           end
         end
-        insert_zero <= ~insert_zero;
+
+        if (fft_ready) insert_zero <= ~insert_zero;
       end
     end
   end
