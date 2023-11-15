@@ -3,6 +3,7 @@ env/
 
 # HDL stuff
 sim/*.out
+vivado.log
 
 # Misc.
 .DS_Store
