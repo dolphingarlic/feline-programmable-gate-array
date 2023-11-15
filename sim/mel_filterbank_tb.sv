@@ -22,10 +22,7 @@ module mel_filterbank_tb;
 
   mel_filterbank #(
     .NUM_FILTERS(26),
-    .N_FFT(512),
-    .FREQ_LOWERBOUND_HZ(20),
-    .FREQ_UPPERBOUND_HZ(3_000),
-    .SAMPLE_RATE_HZ(6_000)
+    .N_FFT(512)
   ) uut (
     .clk_in(clk_in),
     .rst_in(rst_in),

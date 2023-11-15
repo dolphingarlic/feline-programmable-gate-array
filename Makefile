@@ -14,6 +14,19 @@ build:
 	cp build/build.py build.py
 	./remote/r.py build.py build.tcl $(SOURCES)
 
+.PHONY: gen_triangular_filters
+gen_triangular_filters:
+	python3 sw/gen_triangular_filters.py
+	iverilog -g2012 -o sim/gen_triangular_filters.out sim/gen_triangular_filters_tb.sv hdl/biometrics/feature_extractor/gen_triangular_filters.sv
+	vvp sim/gen_triangular_filters.out
+	gtkwave gen_triangular_filters.vcd
+
+.PHONY: mel_filterbank
+mel_filterbank:
+	iverilog -g2012 -o sim/mel_filterbank.out sim/mel_filterbank_tb.sv hdl/biometrics/feature_extractor/mel_filterbank.sv hdl/biometrics/feature_extractor/gen_triangular_filters.sv hdl/common/pipeline.sv
+	vvp sim/mel_filterbank.out
+	gtkwave mel_filterbank.vcd
+
 .PHONY: uart_tick_generator
 uart_tick_generator:
 	iverilog -g2012 -o sim/uart_tick_generator.out sim/uart_tick_generator_tb.sv hdl/common/uart_tick_generator.sv
