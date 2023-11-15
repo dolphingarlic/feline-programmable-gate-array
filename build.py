@@ -8,11 +8,11 @@ class VivadoBuildError(Exception):
     pass
 
 
-if not os.access("synth_feature_extractor.tcl", os.R_OK):
+if not os.access("build.tcl", os.R_OK):
     raise VivadoBuildError("you should pass a build script for us to run!")
 
 print("starting vivado, please wait...")
-proc = subprocess.Popen(f"{vivado} -mode batch -source synth_feature_extractor.tcl",
+proc = subprocess.Popen(f"{vivado} -mode batch -source build.tcl",
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 while True:

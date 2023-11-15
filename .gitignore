@@ -4,6 +4,7 @@ env/
 # HDL stuff
 sim/*.out
 vivado.log
+obj/*.bit
 
 # Misc.
 .DS_Store
