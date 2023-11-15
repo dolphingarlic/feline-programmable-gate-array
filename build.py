@@ -30,10 +30,25 @@ if proc.returncode != 0:
 else:
     save("vivado.log")
 
+# files to look for:
+files = ["final.bit",
+         "post_synth_timing_summary.rpt",
+         "post_synth_util.rpt",
+         "post_synth_timing.rpt",
+         "clock_util.rpt",
+         "post_place_util.rpt",
+         "post_place_timing_summary.rpt",
+         "post_place_timing.rpt",
+         "post_route_status.rpt",
+         "post_route_timing_summary.rpt",
+         "post_route_timing.rpt",
+         "post_route_power.rpt",
+         "post_imp_drc.rpt",
+         ]
 
-# look for out.bit, because we've hard coded that for now i guess
-if not os.access("obj/final.bit", os.R_OK):
-    raise VivadoBuildError(
-        "vivado exited successfully, but no out.bit generated")
-
-save("obj/final.bit")
+for file in files:
+    # look for out.bit, because we've hard coded that for now i guess
+    if not os.access(f"obj/{file}", os.R_OK):
+        raise VivadoBuildError(
+            f"vivado exited successfully, but no {file} generated")
+    save(f"obj/{file}")
