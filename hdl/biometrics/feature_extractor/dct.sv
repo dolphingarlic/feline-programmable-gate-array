@@ -14,13 +14,13 @@ module dct #(
   input wire clk_in,
   input wire rst_in,
   
-  input wire [15:0] log_data_in [NUM_FILTERS-1:0],
+  input wire signed [15:0] log_data_in [NUM_FILTERS-1:0],
   input wire log_valid_in,
   output logic log_ready_out,
 
   input wire dct_ready_in,
   output logic dct_valid_out,
-  output logic [15:0] dct_data_out,
+  output logic signed [15:0] dct_data_out,
   output logic dct_last_out
 );
 
@@ -30,7 +30,7 @@ module dct #(
 
   logic [$clog2(N_DCT)-1:0] traversal_idx;
   logic insert_zero;
-  logic [15:0] log_data_buffer [NUM_FILTERS-1:0];
+  logic signed [15:0] log_data_buffer [NUM_FILTERS-1:0];
 
   // FFT IP module
   logic [31:0] fft_data_in = 32'b0, fft_data_out;
