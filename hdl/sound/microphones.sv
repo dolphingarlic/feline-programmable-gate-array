@@ -3,54 +3,75 @@
 
 /**
  * @brief Microphone module
- * @details This module reads from the 4 microphones
+ * @details This module reads from the 4 microphones, applies a low-pass filter, decimates, calculates the fft, and finally outputs that data
 */
 
 module microphones(
     input wire clk_in,
-    input wire rst_in,
-    
+    input wire rst_in
+
+    // Microphone signals
     input wire mic_data,
-    output wire mic_lr_clk,
-    output wire mic_sclk,
-
-    input wire axis_aud_tready,
-    output wire axis_aud_tdata,
-    output wire axis_aud_tvalid,
+    output logic mic_sck,
+    output logic mic_ws,
 );
+    
+    // I2S needs a main controller to generate the sck and ws signals
+    logic sck, ws;
 
-    // Generate a 2.048Mhz clock signal for the I2S receiver
-    logic [20:0] aud_clk_count;
-    logic aud_clk;
+    i2s_controller i2s_controller_inst (
+        .clk_in(clk_in),
+        .rst_in(rst_in),
 
-    always_ff @(posedge clk_100mhz) begin
-        if (rst_in) begin
-            aud_clk <= 0;
-            aud_clk_count <= 0;
-        end else if (aud_clk_count == 1_024_000) begin
-            aud_clk = ~aud_clk;
-            aud_clk_count <= 0;
-        end else begin
-            aud_clk_count <= aud_clk_count + 1;
-        end
-    end
-
-    i2s_receiver i2s_receiver_inst(
-        // AXI4-Lite interface
-        .s_axi_ctrl_aclk(clk_in),
-        // AXI-Streaming for data
-        .m_axis_aud_aclk(clk_in),
-        .m_axis_aud_tdata(axis_aud_tdata),
-        .m_axis_aud_tvalid(axis_aud_tvalid),
-        .m_axis_aud_tready(axis_aud_tready)
-        // I2S interface
-        .aud_clk(aud_clk), // I2S clock - Everything else based on this
-        .aud_mrst(rst_in),
-        .lrclk_out(mic_lr_clk), // Left/Right clock - Output to the microphone
-        .sclk_out(mic_sclk), // Serial clock - Output to the microphone
-        .sdata_0_in(mic_data), // Serial data - Input from the microphone
+        .sck(sck),
+        .ws(ws)
     );
 
+    assign mic_sck = sck;
+    assign mic_ws = ws;
+
+    // We create an I2S receiver (in secondary mode) to read data from the microphones
+
+    logic i2s_receiver_tready;
+    logic i2s_receiver_tvalid;
+
+    logic [31:0] i2s_receiver_tdata;
+    logic i2s_receiver_tlast;
+
+    i2s_receiver i2s_receiver_inst (
+        .m_axis_aclk(clk_in),
+        .m_axis_aresetn(rst_in),
+        .m_axis_tready(i2s_receiver_tready),
+        .m_axis_tvalid(i2s_receiver_tvalid),
+        .m_axis_tdata(i2s_receiver_tdata),
+        .m_axis_tlast(i2s_receiver_tlast),
+        // I2S Interface
+        .sck(sck),
+        .ws(ws),
+        .sd(mic_data)
+    );
+
+    // Then we pass the data to an FIR filter (coefficents generated with matlab fir1 function)
+
+    logic fir_data[31:0];
+    logic fir_tvalid;
+
+    fir_compiler_0 fir_inst (
+        .aclk(clk_in),
+        .s_axis_data_tvalid(i2s_receiver_tvalid),
+        .s_axis_data_tready(i2s_receiver_tready),
+        .s_axis_data_tdata(i2s_receiver_tdata[31:8]), // microphones only output 24 bits of data
+        .m_axis_data_tvalid(fir_tvalid),
+        .m_axis_data_tdata(fir_data)
+    );
+
+    // Then we need to decimate the data to 6 kHz
+
+    // TODO
+
+    // Then we pass the data through an FFT
+
+    // TODO
 endmodule
 
 `default_nettype wire

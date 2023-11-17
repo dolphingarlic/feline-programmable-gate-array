@@ -14,14 +14,14 @@ module i2s_controller #(
     output logic ws
 );
 
-    // Generate a 2.048Mhz clock signal for the I2S receiver
+    // Generate a 3.072Mhz clock signal for the I2S receiver (48Khz * 64 = 3.072Mhz)
     logic [4:0] aud_clk_count;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin
             sck <= 0;
             aud_clk_count <= 0;
-        end else if (aud_clk_count == 24) begin
+        end else if (aud_clk_count == 16) begin
             sck <= ~sck;
             aud_clk_count <= 0;
         end else begin
@@ -38,7 +38,7 @@ module i2s_controller #(
             ws_counter <= 0;
             ws <= 0;
         end else begin
-            if (aud_clk_count == 24 && sck) begin
+            if (aud_clk_count == 16 && sck) begin
                 if (ws_counter == OVER_SAMPLING_RATE / 2 - 1) begin
                     ws <= ~ws;
                     ws_counter <= 0;
