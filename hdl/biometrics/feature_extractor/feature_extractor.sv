@@ -8,15 +8,12 @@
  */
 module feature_extractor #(
   parameter NUM_FILTERS = 26,
+  parameter NUM_FEATURES_OUT = 13,
   parameter N_FFT = 512,
-  parameter N_DCT = 32,
-  parameter FREQ_LOWERBOUND_HZ = 20,
-  parameter FREQ_UPPERBOUND_HZ = 3_000,
-  parameter SAMPLE_RATE_HZ = 6_000,
+  parameter N_DCT = 32
 ) (
   input wire clk_in,
   input wire rst_in,
-  input wire [1:0] mode_in,
 
   input wire [31:0] fft_data_in,
   input wire fft_valid_in,
@@ -24,8 +21,9 @@ module feature_extractor #(
   output logic fft_ready_out,
   
   input wire feature_ready_in,
+  output logic feature_last_out,
   output logic feature_valid_out,
-  output logic [31:0] feature_data_out
+  output logic [15:0] feature_data_out
 );
 
   ////////////////////
@@ -57,10 +55,7 @@ module feature_extractor #(
 
   mel_filterbank #(
     .NUM_FILTERS(NUM_FILTERS),
-    .N_FFT(N_FFT),
-    .FREQ_LOWERBOUND_HZ(FREQ_LOWERBOUND_HZ),
-    .FREQ_UPPERBOUND_HZ(FREQ_UPPERBOUND_HZ),
-    .SAMPLE_RATE_HZ(SAMPLE_RATE_HZ)
+    .N_FFT(N_FFT)
   ) mel_filterbank_inst (
     .clk_in(clk_in),
     .rst_in(rst_in),
@@ -102,7 +97,7 @@ module feature_extractor #(
 
         .filtered_data_in(filtered_data[i]),
         .filtered_valid_in(filtered_valid),
-        .filtered_ready_out(filtered_ready),
+        .filtered_ready_out(),
 
         .log_ready_in(log_ready),
         .log_valid_out(),
@@ -125,7 +120,7 @@ module feature_extractor #(
     .rst_in(rst_in),
 
     .log_data_in(log_data),
-    .log_valid_in(log_valid[0]),
+    .log_valid_in(log_valid),
     .log_ready_out(log_ready),
 
     .dct_ready_in(dct_ready),
@@ -134,11 +129,24 @@ module feature_extractor #(
     .dct_last_out(dct_last)
   );
 
-  // TODO: truncate and stuff (coefficients 2 to 13 only)
+  ///////////////////////
+  // OUTPUT TRUNCATION //
+  ///////////////////////
+  logic [$clog2(NUM_FILTERS)-1:0] num_outputted;
 
-  // TODO: output control based on operating mode
+  assign feature_data_out = dct_data;
+  assign feature_valid_out = dct_valid && num_outputted < NUM_FEATURES_OUT;
+  assign feature_last_out = feature_valid_out && (num_outputted == NUM_FEATURES_OUT - 1);
 
   always_ff @(posedge clk_in) begin
+    if (rst_in) begin
+      num_outputted <= 0;
+    end else begin
+      if (dct_valid) begin
+        if (num_outputted < NUM_FEATURES_OUT) num_outputted <= num_outputted + 1;
+        else if (dct_last) num_outputted <= 0;
+      end
+    end
   end
 
 endmodule

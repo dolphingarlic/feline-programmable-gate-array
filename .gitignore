@@ -1,8 +1,11 @@
 # Python stuff
 env/
+.env
 
 # HDL stuff
 sim/*.out
+vivado.log
+obj/
 
 # Misc.
 .DS_Store

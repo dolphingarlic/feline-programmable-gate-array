@@ -25,7 +25,7 @@ module logarithm (
   logic [7:0] quarter;
   logic [3:0] eighth;
 
-  logic [10:0] res_frac;
+  logic signed [10:0] res_frac;
   logic [31:0] shifted;
 
   always_comb begin

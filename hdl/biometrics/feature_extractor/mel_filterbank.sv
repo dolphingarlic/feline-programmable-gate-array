@@ -8,10 +8,7 @@
  */
 module mel_filterbank #(
   parameter NUM_FILTERS,
-  parameter N_FFT,
-  parameter FREQ_LOWERBOUND_HZ,
-  parameter FREQ_UPPERBOUND_HZ,
-  parameter SAMPLE_RATE_HZ
+  parameter N_FFT
 ) (
   input wire clk_in,
   input wire rst_in,
@@ -25,10 +22,6 @@ module mel_filterbank #(
   output logic filtered_valid_out,
   output logic [31:0] filtered_data_out [NUM_FILTERS-1:0]
 );
-
-  localparam FREQ_LOWERBOUND_MEL = $ln(700.0 + FREQ_LOWERBOUND_HZ);
-  localparam FREQ_UPPERBOUND_MEL = $ln(700.0 + FREQ_UPPERBOUND_HZ);
-  localparam MEL_SPACING = (FREQ_UPPERBOUND_MEL - FREQ_LOWERBOUND_MEL) / (NUM_FILTERS + 1);
 
   logic [$clog2(N_FFT)-1:0] k_curr;
   logic [31:0] filter_buffer [NUM_FILTERS-1:0];
@@ -46,50 +39,80 @@ module mel_filterbank #(
     .val_out({input_valid_buffer, input_last_buffer})
   );
 
+
   // Run the triangular filters in parallel
-  generate;
-    genvar i;
-    for (i = 0; i < NUM_FILTERS; i = i + 1) begin
-      localparam PEAK_MEL = FREQ_LOWERBOUND_MEL + (i + 1) * MEL_SPACING;
-      localparam START_HZ = $exp(PEAK_MEL - MEL_SPACING) - 700;
-      localparam PEAK_HZ = $exp(PEAK_MEL) - 700;
-      localparam STOP_HZ = $exp(PEAK_MEL + MEL_SPACING) - 700;
+  triangular_filter_0 triangular_filter_inst_0 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[0]));
+  triangular_filter_1 triangular_filter_inst_1 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[1]));
+  triangular_filter_2 triangular_filter_inst_2 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[2]));
+  triangular_filter_3 triangular_filter_inst_3 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[3]));
+  triangular_filter_4 triangular_filter_inst_4 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[4]));
+  triangular_filter_5 triangular_filter_inst_5 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[5]));
+  triangular_filter_6 triangular_filter_inst_6 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[6]));
+  triangular_filter_7 triangular_filter_inst_7 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[7]));
+  triangular_filter_8 triangular_filter_inst_8 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[8]));
+  triangular_filter_9 triangular_filter_inst_9 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[9]));
+  triangular_filter_10 triangular_filter_inst_10 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[10]));
+  triangular_filter_11 triangular_filter_inst_11 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[11]));
+  triangular_filter_12 triangular_filter_inst_12 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[12]));
+  triangular_filter_13 triangular_filter_inst_13 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[13]));
+  triangular_filter_14 triangular_filter_inst_14 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[14]));
+  triangular_filter_15 triangular_filter_inst_15 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[15]));
+  triangular_filter_16 triangular_filter_inst_16 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[16]));
+  triangular_filter_17 triangular_filter_inst_17 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[17]));
+  triangular_filter_18 triangular_filter_inst_18 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[18]));
+  triangular_filter_19 triangular_filter_inst_19 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[19]));
+  triangular_filter_20 triangular_filter_inst_20 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[20]));
+  triangular_filter_21 triangular_filter_inst_21 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[21]));
+  triangular_filter_22 triangular_filter_inst_22 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[22]));
+  triangular_filter_23 triangular_filter_inst_23 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[23]));
+  triangular_filter_24 triangular_filter_inst_24 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[24]));
+  triangular_filter_25 triangular_filter_inst_25 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[25]));
 
-      triangular_filter #(
-        .N_FFT(N_FFT),
-        .START($floor((N_FFT + 1) * START_HZ / SAMPLE_RATE_HZ)),
-        .PEAK($floor((N_FFT + 1) * PEAK_HZ / SAMPLE_RATE_HZ)),
-        .STOP($floor((N_FFT + 1) * STOP_HZ / SAMPLE_RATE_HZ))
-      ) triangular_filter_inst (
-        .clk_in(clk_in),
-        .rst_in(rst_in),
-
-        .power_in(power_data_in),
-        .k_in(k_curr),
-        .filtered_out(filter_buffer[i])
-      );
-
-      always_ff @(posedge clk_in) begin
-        if (rst_in || (filtered_valid_out && filtered_ready_in)) begin
-          filtered_data_out[i] <= 0;
-        end else if (input_valid_buffer) begin
-          // TODO: What if this overflows?
-          // Let's just assume that won't happen for now...
-          filtered_data_out[i] <= filtered_data_out[i] + filter_buffer[i];
-          // filtered_data_out[i] <= filtered_data_out[i] + filter_buffer[i][31:5];
-        end
-      end
-    end
-  endgenerate
 
   always_ff @(posedge clk_in) begin
     if (rst_in || (filtered_valid_out && filtered_ready_in)) begin
-      // Reset the counter to zero once we're done
+      // Reset values to zero once we're done
       k_curr <= 0;
       filtered_valid_out <= 0;
+      for (int i = 0; i < NUM_FILTERS; i = i + 1) begin
+        filtered_data_out[i] <= 0;
+      end
       // Stop stalling after releasing held data
       power_ready_out <= 1;
     end else begin
+      // TODO: handle overflow lmao
+      if (input_valid_buffer) begin
+        for (int i = 0; i < NUM_FILTERS; i = i + 1) begin
+          filtered_data_out[i] <= filtered_data_out[i] + filter_buffer[i];
+        end
+      end
+
       // Advance the pipeline once we've consumed a valid input
       if (power_valid_in) begin
         k_curr <= k_curr + 1;
