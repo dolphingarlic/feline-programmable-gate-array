@@ -6,3 +6,12 @@ sim/*.out
 
 # Misc.
 .DS_Store
+
+vivado_*.backup.log
+vivado_*.backup.jou
+vivado.log
+vivado.jou
+
+ip_tb/
+ip/i2s_receiver/ip/
+.Xil/i2s_receiver_propImpl.xdc
