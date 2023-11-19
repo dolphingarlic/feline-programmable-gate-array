@@ -23,7 +23,7 @@ module feature_extractor #(
   input wire feature_ready_in,
   output logic feature_last_out,
   output logic feature_valid_out,
-  output logic [15:0] feature_data_out
+  output logic signed [15:0] feature_data_out
 );
 
   ////////////////////
@@ -74,7 +74,7 @@ module feature_extractor #(
   // BASE-2 LOGARITHM //
   //////////////////////
   logic log_ready, log_valid;
-  logic [15:0] log_data [NUM_FILTERS-1:0];
+  logic signed [15:0] log_data [NUM_FILTERS-1:0];
 
   logarithm logarithm_inst (
     .clk_in(clk_in),
@@ -110,7 +110,9 @@ module feature_extractor #(
   // DISCRETE COSINE TRANSFORM //
   ///////////////////////////////
   logic dct_ready, dct_valid, dct_last;
-  logic [15:0] dct_data;
+  logic signed [15:0] dct_data;
+
+  assign dct_ready = feature_ready_in;
 
   dct #(
     .NUM_FILTERS(NUM_FILTERS),
