@@ -11,7 +11,7 @@ module uart_end_to_end_tb;
   logic uart_tick, uart_line;
   // Output logics 
   logic [7:0] data_out;
-  logic busy_out, done_out;
+  logic busy_out, tx_done_out, rx_done_out;
 
   uart_tick_generator #(
     .BAUDRATE_HZ(115_200),
@@ -31,7 +31,8 @@ module uart_end_to_end_tb;
     .data_in(data_in),
     .enable_in(uart_tx_enable),
     .tx_out(uart_line),
-    .busy_out(busy_out)
+    .busy_out(busy_out),
+    .done_out(tx_done_out)
   );
   uart_rx #(
     .SAMPLE_RATE(16)
@@ -42,7 +43,7 @@ module uart_end_to_end_tb;
     .rx_in(uart_line),
     .enable_in(1'b1),
     .data_out(data_out),
-    .done_out(done_out)
+    .done_out(rx_done_out)
   );
 
   always begin

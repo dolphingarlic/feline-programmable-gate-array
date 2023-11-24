@@ -8,7 +8,7 @@ module uart_tx_tb;
   logic uart_tick, enable_in;
   logic [7:0] data_in;
   // Output logics
-  logic tx_out, busy_out;
+  logic tx_out, busy_out, done_out;
 
   uart_tick_generator #(
     .BAUDRATE_HZ(115_200),
@@ -28,7 +28,8 @@ module uart_tx_tb;
     .data_in(data_in),
     .enable_in(enable_in),
     .tx_out(tx_out),
-    .busy_out(busy_out)
+    .busy_out(busy_out),
+    .done_out(done_out)
   );
 
   always begin

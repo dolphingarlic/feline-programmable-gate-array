@@ -13,34 +13,55 @@ module bluetooth #(
   parameter CLK_HZ = 98_304_000,
   parameter SAMPLE_RATE = 16
 ) (
+  output logic [15:0] led, // FOR DEBUGGING
+
   input wire clk_in,
   input wire rst_in,
-  // TODO: include a "mode" too (to control when to output data)
+  input wire write_enable_in,
 
   input wire [15:0] feature_data_in,
   input wire feature_valid_in,
-  // input wire feature_last_in, // TODO: Use this signal
-  output wire feature_ready_out,
+  input wire feature_last_in,
+  output logic feature_ready_out,
+
+  output logic ble_valid_out,
+  output logic [7:0] ble_data_out,
 
   input wire ble_uart_rx_in,
-  input wire ble_uart_cts_in,
-  output logic ble_uart_tx_out,
-  output logic ble_uart_rts_out
+  output logic ble_uart_tx_out
 );
 
   logic [15:0] fifo_data;
-  logic fifo_valid, fifo_ready;
+  logic fifo_valid, fifo_last, fifo_ready;
+  assign led[6:4] = {fifo_valid, fifo_last, fifo_ready};
 
   axis_data_fifo_2byte_256 fifo_inst (
     .s_axis_aclk(clk_in),
-    .s_axis_aresetn(1'b1),
+    .s_axis_aresetn(~rst_in),
     .s_axis_tvalid(feature_valid_in),
     .s_axis_tready(feature_ready_out),
     .s_axis_tdata(feature_data_in),
+    .s_axis_tlast(feature_last_in),
     .m_axis_tvalid(fifo_valid),
     .m_axis_tdata(fifo_data),
+    .m_axis_tlast(fifo_last),
     .m_axis_tready(fifo_ready)
   );
+
+  // We want to write entire frames at a time
+  logic frame_write_enable, fifo_last_buffer;
+  assign led[7] = frame_write_enable;
+  // So use a consistent write_enable signal across a single frame
+  always_ff @(posedge clk_in) begin
+    if (rst_in) begin
+      frame_write_enable <= 0;
+      fifo_last_buffer <= 0;
+    end else begin
+      if (fifo_last) frame_write_enable <= write_enable_in;
+      // frame_write_enable <= write_enable_in;
+      fifo_last_buffer <= fifo_last;
+    end
+  end
 
   logic uart_tick;
 
@@ -57,14 +78,16 @@ module bluetooth #(
   ////////////////
   // WRITE DATA //
   ////////////////
-  typedef enum { IDLE=0, WRITE=1 } write_state;
-  write_state state;
+  typedef enum { IDLE=0, DATA=1, FLUSH=2 } ble_write_state;
+  ble_write_state state;
+  assign led[10:9] = state;
   logic [7:0] uart_tx_data, next_uart_tx_data;
-  logic curr_byte, uart_tx_enable, uart_tx_busy;
+  logic curr_byte, uart_tx_enable, uart_tx_busy, uart_tx_done;
 
-  assign fifo_ready = (state == IDLE);
-  // TODO: deal with RTS/CTS
-  assign uart_tx_enable = (state == WRITE);
+  // We're ready to accept  
+  assign fifo_ready = (state == IDLE) || !frame_write_enable;
+  assign uart_tx_enable = ~fifo_ready;
+  assign led[8] = uart_tx_enable;
 
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
@@ -73,22 +96,26 @@ module bluetooth #(
       uart_tx_data <= 0;
       curr_byte <= 0;
     end else begin
-      if (state == IDLE) begin
+      if (state == IDLE && frame_write_enable) begin
         // Oh boy we're ready to start sending new data
         if (fifo_valid) begin
           next_uart_tx_data <= fifo_data[15:8];
-          state <= WRITE;
+          state <= DATA;
           uart_tx_data <= fifo_data[7:0];
           curr_byte <= 0;
         end
-      end else if (state == WRITE) begin
-        // We've finished sending a byte
-        if (!uart_tx_busy) begin
+      end else if (state == DATA && uart_tx_done) begin
+        if (fifo_last_buffer) begin
+          // Send a newline character (0x0A) to flush the output
+          uart_tx_data <= 8'h0A;
+          state <= FLUSH;
+        end else begin
           uart_tx_data <= next_uart_tx_data;
-          // Transition back to IDLE if we've sent both bytes
           if (curr_byte) state <= IDLE;
           else curr_byte <= 1;
         end
+      end else if (state == FLUSH && uart_tx_done) begin
+        state <= IDLE;
       end
     end
   end
@@ -102,17 +129,14 @@ module bluetooth #(
     .data_in(uart_tx_data),
     .enable_in(uart_tx_enable),
     .tx_out(ble_uart_tx_out),
-    .busy_out(uart_tx_busy)
+    .busy_out(uart_tx_busy),
+    .done_out(uart_tx_done)
   );
+  assign led[14:12] = {uart_tx_busy, uart_tx_done, curr_byte};
 
   ///////////////
   // READ DATA //
   ///////////////
-  logic [7:0] uart_rx_data;
-  logic uart_rx_enable, uart_rx_done;
-  // TODO: use RTS/CTS
-  assign uart_rx_enable = 1;
-
   uart_rx #(
     .SAMPLE_RATE(SAMPLE_RATE)
   ) uart_rx_inst (
@@ -120,9 +144,9 @@ module bluetooth #(
     .rst_in(rst_in),
     .tick_in(uart_tick),
     .rx_in(ble_uart_rx_in),
-    .enable_in(uart_rx_enable),
-    .data_out(uart_rx_data),
-    .done_out(uart_rx_done)
+    .enable_in(1'b1),
+    .data_out(ble_data_out),
+    .done_out(ble_valid_out)
   );
 
 endmodule

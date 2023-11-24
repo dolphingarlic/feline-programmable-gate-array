@@ -18,8 +18,11 @@ if {[llength $files] != 0} {
 
 # read in all system veriilog files:
 read_verilog -sv [ glob ./hdl/*.sv ]
+read_verilog -sv [ glob ./hdl/biometrics/*.sv ]
 read_verilog -sv [ glob ./hdl/biometrics/feature_extractor/*.sv ]
 read_verilog -sv [ glob ./hdl/common/*.sv ]
+read_verilog -sv [ glob ./hdl/sound/*.sv ]
+read_verilog [ glob ./hdl/sound/*.v ]
 # uncomment line below if verilog (.v) files present:
 # read_verilog  [ glob ./hdl/*.v ]
 read_xdc ./xdc/top_level.xdc
@@ -31,6 +34,8 @@ set_part $partNum
 
 # Read in all IP
 read_ip ./ip/xfft_128/xfft_128.xci
+read_ip ./ip/xfft_512/xfft_512.xci
+read_ip ./ip/axis_data_fifo_2byte_256/axis_data_fifo_2byte_256.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 
