@@ -8,12 +8,12 @@
 
 module microphones(
     input wire clk_in,
-    input wire rst_in
+    input wire rst_in,
 
     // Microphone signals
     input wire mic_data,
     output logic mic_sck,
-    output logic mic_ws,
+    output logic mic_ws
 );
     
     // I2S needs a main controller to generate the sck and ws signals

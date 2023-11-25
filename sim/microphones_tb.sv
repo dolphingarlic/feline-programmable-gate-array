@@ -7,8 +7,6 @@ module microphones_tb;
   logic clk_in, rst_in;
   logic sck, ws;
 
-  logic [31:0] mic_data;
-
   i2s_controller i2s_controller_inst (
     .clk_in(clk_in),
     .rst_in(rst_in),
@@ -17,11 +15,12 @@ module microphones_tb;
     .ws(ws)
   );
 
-  microphones uut(
-    .clk_in(clk_in),
-    .rst_in(rst_in)
+  logic mic_data;
 
-    // Microphone signals
+  microphones uut (
+    .clk_in(clk_in),
+    .rst_in(rst_in),
+
     .mic_data(mic_data),
     .mic_sck(sck),
     .mic_ws(ws)
@@ -32,7 +31,14 @@ module microphones_tb;
       clk_in = !clk_in;
   end
 
-  logic prev_ws;
+  logic [5:0] sck_counter;
+  logic sck_prev;
+  logic [0:31] j;
+
+  // Generate and transmit a sine wave
+  real freq = 1e6; // 1MHz frequency
+  real ampl = 0.5;  // Amplitude
+  real angle = 0;
 
   initial begin
     $dumpfile("microphones.vcd");
@@ -42,16 +48,34 @@ module microphones_tb;
     // Initialize variables
     clk_in = 0;
     rst_in = 0;
-    mic_data = 1;
 
-    // Transmit a high-frequency sine wave
+    #10;
+    rst_in = 1;
+    #10;
+    rst_in = 0;
+    #10;
+
+    sck_prev = sck;
+    sck_counter = 0;
+
     for (int i = 0; i < 512; i = i + 1) begin
-      mic_data = 16'hBEEF * $sin(i / 5.0);
+      $display("i is %d", i);
 
-      while (prev_ws == 1 || ws == 0) begin
-        prev_ws = ws;
-        #10;
-      end
+      angle = 2 * $time * freq * 3.141592653589 / 1000;
+
+      j = 32'hFFFF * $sin(angle);
+
+      // while (sck_counter < 32) begin
+      //     if (sck == 1'b1 && sck_prev == 1'b0) begin
+      //         mic_data = j[sck_counter];
+      //         sck_counter = sck_counter + 1;
+      //     end
+      //     sck_prev = sck;
+      //     #10;
+      // end
+
+      // sck_counter = 0;
+      #10;
     end
 
     $display("Finishing Sim");

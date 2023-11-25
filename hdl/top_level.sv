@@ -38,9 +38,6 @@ module top_level (
   logic signed [8:0] mic_audio;
   logic[7:0] audio_data;
 
-  logic [8:0] pdm_tally;
-  logic [9:0] pdm_counter;
-
   localparam PDM_COUNT_PERIOD = 32;
   localparam NUM_PDM_SAMPLES = 512;
 
@@ -50,31 +47,10 @@ module top_level (
 
   assign pdm_signal_valid = mic_clk && ~old_mic_clk;
 
-  logic [1:0] pwm_counter;
-  logic pwm_step;
-  assign pwm_step = (pwm_counter==2'b11);
-
-  always_ff @(posedge clk_m)begin
-    pwm_counter <= pwm_counter+1;
-  end
-
   always_ff @(posedge clk_m)begin
     mic_clk <= m_clock_counter < PDM_COUNT_PERIOD/2;
     m_clock_counter <= (m_clock_counter==PDM_COUNT_PERIOD-1)?0:m_clock_counter+1;
     old_mic_clk <= mic_clk;
-  end
-  always_ff @(posedge clk_m)begin
-    if (pdm_signal_valid)begin
-      sampled_mic_data    <= mic_data;
-      pdm_counter         <= (pdm_counter==NUM_PDM_SAMPLES)?0:pdm_counter + 1;
-      pdm_tally           <= (pdm_counter==NUM_PDM_SAMPLES)?mic_data
-                                                            :pdm_tally+mic_data;
-      audio_sample_valid  <= (pdm_counter==NUM_PDM_SAMPLES);
-      mic_audio           <= (pdm_counter==NUM_PDM_SAMPLES)?{~pdm_tally[8],pdm_tally[7:0]}
-                                                            :mic_audio;
-    end else begin
-      audio_sample_valid <= 0;
-    end
   end
 
   assign audio_data = mic_audio[8:1];
