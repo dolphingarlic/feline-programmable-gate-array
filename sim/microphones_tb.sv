@@ -9,6 +9,14 @@ module microphones_tb;
 
   logic [31:0] mic_data;
 
+  i2s_controller i2s_controller_inst (
+    .clk_in(clk_in),
+    .rst_in(rst_in),
+
+    .sck(sck),
+    .ws(ws)
+  );
+
   microphones uut(
     .clk_in(clk_in),
     .rst_in(rst_in)
@@ -24,9 +32,11 @@ module microphones_tb;
       clk_in = !clk_in;
   end
 
+  logic prev_ws;
+
   initial begin
-    $dumpfile("i2s_microphones.vcd");
-    $dumpvars(0, i2s_receiver_tb);
+    $dumpfile("microphones.vcd");
+    $dumpvars(0, microphones_tb);
     $display("Starting Sim");
 
     // Initialize variables
@@ -34,12 +44,15 @@ module microphones_tb;
     rst_in = 0;
     mic_data = 1;
 
-    // Transmit all 8 character hex numbers
-    #10;
-    rst_in = 1;
-    #10;
-    rst_in = 0;
-    #10;
+    // Transmit a high-frequency sine wave
+    for (int i = 0; i < 512; i = i + 1) begin
+      mic_data = 16'hBEEF * $sin(i / 5.0);
+
+      while (prev_ws == 1 || ws == 0) begin
+        prev_ws = ws;
+        #10;
+      end
+    end
 
     $display("Finishing Sim");
     $finish;
