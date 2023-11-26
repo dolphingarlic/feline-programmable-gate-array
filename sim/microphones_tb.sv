@@ -7,14 +7,6 @@ module microphones_tb;
   logic clk_in, rst_in;
   logic sck, ws;
 
-  i2s_controller i2s_controller_inst (
-    .clk_in(clk_in),
-    .rst_in(rst_in),
-
-    .sck(sck),
-    .ws(ws)
-  );
-
   logic mic_data;
 
   microphones uut (
@@ -33,7 +25,7 @@ module microphones_tb;
 
   logic [5:0] sck_counter;
   logic sck_prev;
-  logic [0:31] j;
+  logic signed [31:0] j;
 
   // Generate and transmit a sine wave
   real freq = 1e6; // 1MHz frequency
@@ -55,27 +47,48 @@ module microphones_tb;
     rst_in = 0;
     #10;
 
+    while (ws == 1'b0) begin
+        #10;
+    end
+
+    // sck_prev = sck;
+    // sck_counter = 0;
+
+    // for (int i = 0; i < 30; i = i + 1) begin
+    //   $display("i is %d", i);
+
+    //   angle = i * 3.1415 * 2 / 360;
+
+    //   j = 32'h7F_FF_FF_FF * $sin(4.0 * angle); // 2's complement
+
+    //   while (sck_counter < 32) begin
+    //       if (sck == 1'b1 && sck_prev == 1'b0) begin
+    //           mic_data = j[sck_counter];
+    //           sck_counter = sck_counter + 1;
+    //       end
+    //       sck_prev = sck;
+    //       #10;
+    //   end
+
+    //   sck_counter = 0;
+    //   #10;
+    // end
     sck_prev = sck;
     sck_counter = 0;
 
-    for (int i = 0; i < 512; i = i + 1) begin
-      $display("i is %d", i);
-
-      angle = 2 * $time * freq * 3.141592653589 / 1000;
-
-      j = 32'hFFFF * $sin(angle);
-
-      // while (sck_counter < 32) begin
-      //     if (sck == 1'b1 && sck_prev == 1'b0) begin
-      //         mic_data = j[sck_counter];
-      //         sck_counter = sck_counter + 1;
-      //     end
-      //     sck_prev = sck;
-      //     #10;
-      // end
-
-      // sck_counter = 0;
-      #10;
+    for (int i = 0; i <= 8'h0A; i = i + 1) begin
+        $display("i is %d", i);
+        j = i << 24;
+        while (sck_counter < 32) begin
+            if (sck == 1'b1 && sck_prev == 1'b0) begin
+                mic_data = j[sck_counter];
+                sck_counter = sck_counter + 1;
+            end
+            sck_prev = sck;
+            #10;
+        end
+        sck_counter = 0;
+        #10;
     end
 
     $display("Finishing Sim");
