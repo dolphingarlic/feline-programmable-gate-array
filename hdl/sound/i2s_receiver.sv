@@ -65,7 +65,7 @@ module i2s_receiver #(
         if (!m_axis_aresetn) begin
             m_axis_tvalid <= 0;
         end else if (sck_rise && wsp) begin
-            m_axis_tvalid <= 1;
+            m_axis_tvalid <= (^data !== 1'bx);
             m_axis_tlast <= !wsd;
         end else if (m_axis_tready) begin
             m_axis_tvalid <= 0;

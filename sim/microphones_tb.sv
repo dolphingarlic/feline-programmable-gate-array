@@ -20,7 +20,7 @@ module microphones_tb;
 
   always begin
       #5; // 100MHz clock
-      clk_in = !clk_in;
+      clk_in = ~clk_in;
   end
 
   logic [5:0] sck_counter;
@@ -59,7 +59,7 @@ module microphones_tb;
 
       angle = i * 3.1415 * 2 / 360;
 
-      j = 32'h7F_FF_FF_FF * $sin(64.0 * angle); // 2's complement
+      j = 32'h7F_FF_FF_FF * $sin(16.0 * angle); // 2's complement
 
       while (sck_counter < 32) begin
           if (sck == 1'b1 && sck_prev == 1'b0) begin
