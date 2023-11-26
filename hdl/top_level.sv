@@ -56,7 +56,7 @@ module top_level (
     old_mic_clk <= mic_clk;
   end
 
-  logic [31:0] mic_audio_data;
+  logic signed [15:0] mic_audio_data;
 
   microphones my_microphones(
     .clk_in(clk_m),
@@ -68,7 +68,7 @@ module top_level (
     .audio_data(mic_audio_data)
   );
 
-  assign audio_data = mic_audio_data[31:24];
+  assign audio_data = mic_audio_data[15:8];
 
   logic audio_out;
   pdm my_pdm(
@@ -131,14 +131,13 @@ module top_level (
 
 endmodule
 
-
 module pdm(
-    input wire clk_in,
-    input wire rst_in,
-    input wire [7:0] level_in, // Change to unsigned
-    input wire tick_in,
-    output logic pdm_out
-);
+            input wire clk_in,
+            input wire rst_in,
+            input wire signed [7:0] level_in,
+            input wire tick_in,
+            output logic pdm_out
+  );
 
   logic signed [8:0] error;
 
@@ -146,7 +145,7 @@ module pdm(
     if (rst_in) begin
       error <= 0;
     end else if (tick_in) begin
-      error <= error + signed'(level_in) - (error > 0 ? 127 : -128); // Convert to signed
+      error <= error + level_in - (error > 0 ? 127 : -128);
     end
   end
 

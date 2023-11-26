@@ -5,7 +5,7 @@ read_verilog -sv [ glob ./hdl/*/*.sv ]
 #read_mem [ glob ./data/*.mem ]
 read_verilog -sv [ glob ./sim/*.sv ]
 
-read_ip ./ip/fir_compiler_0/fir_compiler_0.xci
+read_ip ./ip/fir_compiler_1/fir_compiler_1.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 

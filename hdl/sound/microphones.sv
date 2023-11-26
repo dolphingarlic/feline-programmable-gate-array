@@ -15,7 +15,7 @@ module microphones(
     output logic mic_sck,
     output logic mic_ws,
 
-    output logic [31:0] audio_data
+    output logic signed [15:0] audio_data
 );
     
     // I2S needs a main controller to generate the sck and ws signals
@@ -51,18 +51,21 @@ module microphones(
         .sck(sck),
         .ws(ws),
         .sd(mic_data)
-    );
+    ); 
 
     // Then we pass the data to an FIR filter (coefficents generated with matlab fir1 function)
 
-    logic [31:0] fir_data;
+    logic signed [15:0] fir_data;
     logic fir_tvalid;
 
-    fir_compiler_0 fir_inst (
+    logic signed [23:0] signed_i2s_data;
+    assign signed_i2s_data = signed'(i2s_receiver_tdata[31:8]);
+
+    fir_compiler_1 fir_inst (
         .aclk(clk_in),
         .s_axis_data_tvalid(i2s_receiver_tvalid),
         .s_axis_data_tready(i2s_receiver_tready),
-        .s_axis_data_tdata(i2s_receiver_tdata[31:8]), // microphones only output 24 bits of data
+        .s_axis_data_tdata(signed_i2s_data), // microphones only output 24 bits of data
         .m_axis_data_tvalid(fir_tvalid),
         .m_axis_data_tdata(fir_data)
     );
