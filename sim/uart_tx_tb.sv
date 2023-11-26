@@ -38,7 +38,7 @@ module uart_tx_tb;
   end
 
   initial begin
-    $dumpfile("uart_tx.vcd");
+    $dumpfile("vcd/uart_tx.vcd");
     $dumpvars(0, uart_tx_tb);
     $display("Starting Sim");
 

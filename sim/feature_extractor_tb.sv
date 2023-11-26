@@ -53,7 +53,7 @@ module feature_extractor_tb;
   end
 
   initial begin
-    $dumpfile("feature_extractor.vcd");
+    $dumpfile("vcd/feature_extractor.vcd");
     $dumpvars(0, feature_extractor_tb);
     $display("Starting sim");
 

@@ -21,7 +21,7 @@ module i2s_controller_tb;
   end
 
   initial begin
-    $dumpfile("i2s_controller.vcd");
+    $dumpfile("vcd/i2s_controller.vcd");
     $dumpvars(0, i2s_controller_tb);
     $display("Starting Sim");
 

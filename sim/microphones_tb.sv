@@ -35,7 +35,7 @@ module microphones_tb;
   logic prev_ws;
 
   initial begin
-    $dumpfile("microphones.vcd");
+    $dumpfile("vcd/microphones.vcd");
     $dumpvars(0, microphones_tb);
     $display("Starting Sim");
 

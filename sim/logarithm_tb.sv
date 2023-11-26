@@ -30,7 +30,7 @@ module logarithm_tb;
   end
 
   initial begin
-    $dumpfile("logarithm.vcd");
+    $dumpfile("vcd/logarithm.vcd");
     $dumpvars(0, logarithm_tb);
     $display("Starting Sim");
 

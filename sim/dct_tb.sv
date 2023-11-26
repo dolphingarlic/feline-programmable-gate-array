@@ -34,7 +34,7 @@ module dct_tb;
   end
 
   initial begin
-    $dumpfile("dct.vcd");
+    $dumpfile("vcd/dct.vcd");
     $dumpvars(0, dct_tb);
     $display("Starting Sim");
 

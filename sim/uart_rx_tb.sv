@@ -37,7 +37,7 @@ module uart_rx_tb();
   end
 
   initial begin
-    $dumpfile("uart_rx.vcd");
+    $dumpfile("vcd/uart_rx.vcd");
     $dumpvars(0, uart_rx_tb);
     $display("Starting Sim");
     clk_in = 0;

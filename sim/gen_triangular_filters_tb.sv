@@ -119,7 +119,7 @@ module gen_triangular_filters_tb;
   end
 
   initial begin
-    $dumpfile("gen_triangular_filters.vcd");
+    $dumpfile("vcd/gen_triangular_filters.vcd");
     $dumpvars(0, gen_triangular_filters_tb);
     $display("Starting sim");
 

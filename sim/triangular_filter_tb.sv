@@ -30,7 +30,7 @@ module triangular_filter_tb;
   end
 
   initial begin
-    $dumpfile("triangular_filter.vcd");
+    $dumpfile("vcd/triangular_filter.vcd");
     $dumpvars(0, triangular_filter_tb);
     $display("Starting Sim");
 

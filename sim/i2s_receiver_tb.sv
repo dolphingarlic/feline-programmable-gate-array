@@ -47,7 +47,7 @@ module i2s_receiver_tb;
   logic [0:31] j;
 
   initial begin
-    $dumpfile("i2s_receiver.vcd");
+    $dumpfile("vcd/i2s_receiver.vcd");
     $dumpvars(0, i2s_receiver_tb);
     $display("Starting Sim");
 

@@ -79,7 +79,7 @@ TESTBENCH_BOILERPLATE_END = f"""
   end
 
   initial begin
-    $dumpfile("gen_triangular_filters.vcd");
+    $dumpfile("vcd/gen_triangular_filters.vcd");
     $dumpvars(0, gen_triangular_filters_tb);
     $display("Starting sim");
 
@@ -142,7 +142,7 @@ with open('hdl/biometrics/feature_extractor/gen_triangular_filters.sv', 'w') as 
         # Initialize the module
         f.write(f'module triangular_filter_{i} (\n')
         f.write(MODULE_BOILERPLATE_START)
-        
+
         # Calculate the scale factor
         f.write('        // Rising edge\n')
         inv_lower_bandwidth = 2**INV_PRECISION / (peak_k - start_k)
@@ -168,8 +168,10 @@ with open('sim/gen_triangular_filters_tb.sv', 'w') as f:
     f.write(TESTBENCH_BOILERPLATE_START)
     for i in range(NUM_FILTERS):
         f.write(f'  logic [31:0] filtered_out_{i};\n')
-        f.write(f'  triangular_filter_{i} uut_{i} (.clk_in(clk_in), .rst_in(rst_in),\n')
-        f.write(f'    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_{i}));\n\n')
+        f.write(
+            f'  triangular_filter_{i} uut_{i} (.clk_in(clk_in), .rst_in(rst_in),\n')
+        f.write(
+            f'    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_{i}));\n\n')
     f.write(TESTBENCH_BOILERPLATE_END)
 
 
@@ -177,5 +179,7 @@ with open('sim/gen_triangular_filters_tb.sv', 'w') as f:
 print('INSTANTIATION TEMPLATE')
 print('----------------------')
 for i in range(NUM_FILTERS):
-    print(f'  triangular_filter_{i} triangular_filter_inst_{i} (.clk_in(clk_in), .rst_in(rst_in),')
-    print(f'    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[{i}]));')
+    print(
+        f'  triangular_filter_{i} triangular_filter_inst_{i} (.clk_in(clk_in), .rst_in(rst_in),')
+    print(
+        f'    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[{i}]));')

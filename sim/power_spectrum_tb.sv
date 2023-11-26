@@ -32,7 +32,7 @@ module power_spectrum_tb;
   end
 
   initial begin
-    $dumpfile("power_spectrum.vcd");
+    $dumpfile("vcd/power_spectrum.vcd");
     $dumpvars(0, power_spectrum_tb);
     $display("Starting Sim");
 

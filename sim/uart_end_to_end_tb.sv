@@ -52,7 +52,7 @@ module uart_end_to_end_tb;
   end
 
   initial begin
-    $dumpfile("uart_end_to_end.vcd");
+    $dumpfile("vcd/uart_end_to_end.vcd");
     $dumpvars(0, uart_end_to_end_tb);
     $display("Starting Sim");
 

@@ -23,7 +23,7 @@ module uart_tick_generator_tb();
   end
 
   initial begin
-    $dumpfile("uart_tick_generator.vcd");
+    $dumpfile("vcd/uart_tick_generator.vcd");
     $dumpvars(0, uart_tick_generator_tb);
     $display("Starting Sim");
     clk_in = 0;

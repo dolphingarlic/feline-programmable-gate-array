@@ -6,6 +6,7 @@ env/
 sim/*.out
 vivado.log
 obj/
+vcd/
 
 # Misc.
 .DS_Store

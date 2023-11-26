@@ -19,37 +19,37 @@ gen_triangular_filters:
 	python3 sw/gen_triangular_filters.py
 	iverilog -g2012 -o sim/gen_triangular_filters.out sim/gen_triangular_filters_tb.sv hdl/biometrics/feature_extractor/gen_triangular_filters.sv
 	vvp sim/gen_triangular_filters.out
-	gtkwave gen_triangular_filters.vcd
+	gtkwave vcd/gen_triangular_filters.vcd
 
 .PHONY: mel_filterbank
 mel_filterbank:
 	iverilog -g2012 -o sim/mel_filterbank.out sim/mel_filterbank_tb.sv hdl/biometrics/feature_extractor/mel_filterbank.sv hdl/biometrics/feature_extractor/gen_triangular_filters.sv hdl/common/pipeline.sv
 	vvp sim/mel_filterbank.out
-	gtkwave mel_filterbank.vcd
+	gtkwave vcd/mel_filterbank.vcd
 
 .PHONY: uart_tick_generator
 uart_tick_generator:
 	iverilog -g2012 -o sim/uart_tick_generator.out sim/uart_tick_generator_tb.sv hdl/common/uart_tick_generator.sv
 	vvp sim/uart_tick_generator.out
-	gtkwave uart_tick_generator.vcd
+	gtkwave vcd/uart_tick_generator.vcd
 
 .PHONY: uart_rx
 uart_rx:
 	iverilog -g2012 -o sim/uart_rx.out sim/uart_rx_tb.sv hdl/common/uart_rx.sv hdl/common/uart_tick_generator.sv
 	vvp sim/uart_rx.out
-	gtkwave uart_rx.vcd
+	gtkwave vcd/uart_rx.vcd
 
 .PHONY: uart_tx
 uart_tx:
 	iverilog -g2012 -o sim/uart_tx.out sim/uart_tx_tb.sv hdl/common/uart_tx.sv hdl/common/uart_tick_generator.sv
 	vvp sim/uart_tx.out
-	gtkwave uart_tx.vcd
+	gtkwave vcd/uart_tx.vcd
 
 .PHONY: uart_end_to_end
 uart_end_to_end:
 	iverilog -g2012 -o sim/uart_end_to_end.out sim/uart_end_to_end_tb.sv hdl/common/uart_tx.sv hdl/common/uart_rx.sv hdl/common/uart_tick_generator.sv
 	vvp sim/uart_end_to_end.out
-	gtkwave uart_end_to_end.vcd
+	gtkwave vcd/uart_end_to_end.vcd
 
 .PHONY: clean
 clean:

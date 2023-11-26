@@ -43,7 +43,7 @@ module mel_filterbank_tb;
   end
 
   initial begin
-    $dumpfile("mel_filterbank.vcd");
+    $dumpfile("vcd/mel_filterbank.vcd");
     $dumpvars(0, mel_filterbank_tb);
     $display("Starting Sim");
 
