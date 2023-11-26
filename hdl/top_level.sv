@@ -119,8 +119,6 @@ module top_level (
   );
 
   biometrics biometrics_inst (
-    .led(led),
-
     .clk_in(clk_m),
     .rst_in(sys_rst),
     .write_enable_in(btn[1]),

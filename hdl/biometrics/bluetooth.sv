@@ -13,8 +13,6 @@ module bluetooth #(
   parameter CLK_HZ = 98_304_000,
   parameter SAMPLE_RATE = 16
 ) (
-  output logic [15:0] led, // FOR DEBUGGING
-
   input wire clk_in,
   input wire rst_in,
   input wire write_enable_in,
@@ -33,7 +31,6 @@ module bluetooth #(
 
   logic [15:0] fifo_data;
   logic fifo_valid, fifo_last, fifo_ready;
-  assign led[6:4] = {fifo_valid, fifo_last, fifo_ready};
 
   axis_data_fifo_2byte_256 fifo_inst (
     .s_axis_aclk(clk_in),
@@ -50,7 +47,6 @@ module bluetooth #(
 
   // We want to write entire frames at a time
   logic frame_write_enable, fifo_last_buffer;
-  assign led[7] = frame_write_enable;
   // So use a consistent write_enable signal across a single frame
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
@@ -58,7 +54,6 @@ module bluetooth #(
       fifo_last_buffer <= 0;
     end else begin
       if (fifo_last) frame_write_enable <= write_enable_in;
-      // frame_write_enable <= write_enable_in;
       fifo_last_buffer <= fifo_last;
     end
   end
@@ -80,14 +75,12 @@ module bluetooth #(
   ////////////////
   typedef enum { IDLE=0, DATA=1, FLUSH=2 } ble_write_state;
   ble_write_state state;
-  assign led[10:9] = state;
   logic [7:0] uart_tx_data, next_uart_tx_data;
   logic curr_byte, uart_tx_enable, uart_tx_busy, uart_tx_done;
 
   // We're ready to accept  
   assign fifo_ready = (state == IDLE) || !frame_write_enable;
   assign uart_tx_enable = ~fifo_ready;
-  assign led[8] = uart_tx_enable;
 
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
@@ -132,7 +125,6 @@ module bluetooth #(
     .busy_out(uart_tx_busy),
     .done_out(uart_tx_done)
   );
-  assign led[14:12] = {uart_tx_busy, uart_tx_done, curr_byte};
 
   ///////////////
   // READ DATA //
