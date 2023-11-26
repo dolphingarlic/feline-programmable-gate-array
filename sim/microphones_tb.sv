@@ -54,12 +54,12 @@ module microphones_tb;
     sck_prev = sck;
     sck_counter = 0;
 
-    for (int i = 0; i < 30; i = i + 1) begin
+    for (int i = 0; i < 900; i = i + 1) begin
       $display("i is %d", i);
 
       angle = i * 3.1415 * 2 / 360;
 
-      j = 32'h7F_FF_FF_FF * $sin(1.0 * angle); // 2's complement
+      j = 24'h0F_FF_FF * $sin(1.0 * angle) + 24'h00_FF_FF * $sin(128.0 * angle); // 2's complement
 
       while (sck_counter < 32) begin
           if (sck == 1'b1 && sck_prev == 1'b0) begin

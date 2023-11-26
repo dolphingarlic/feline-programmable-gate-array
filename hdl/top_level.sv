@@ -65,6 +65,7 @@ module top_level (
     .mic_data(pmodb[0]),
     .mic_sck(pmoda[0]),
     .mic_ws(pmoda[1]),
+    .filtered(sw[0]),
     .audio_data(mic_audio_data)
   );
 

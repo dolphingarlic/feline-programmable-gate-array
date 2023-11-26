@@ -15,6 +15,7 @@ module microphones(
     output logic mic_sck,
     output logic mic_ws,
 
+    input wire filtered,
     output logic signed [15:0] audio_data
 );
     
@@ -70,7 +71,7 @@ module microphones(
         .m_axis_data_tdata(fir_data)
     );
 
-    assign audio_data = fir_data;
+    assign audio_data = filtered ? fir_data : signed_i2s_data[23:8];
 
     // Then we need to decimate the data to 6 kHz
 
