@@ -13,7 +13,9 @@ module microphones(
     // Microphone signals
     input wire mic_data,
     output logic mic_sck,
-    output logic mic_ws
+    output logic mic_ws,
+
+    output logic [31:0] audio_data
 );
     
     // I2S needs a main controller to generate the sck and ws signals
@@ -53,7 +55,7 @@ module microphones(
 
     // Then we pass the data to an FIR filter (coefficents generated with matlab fir1 function)
 
-    logic fir_data[31:0];
+    logic [31:0] fir_data;
     logic fir_tvalid;
 
     fir_compiler_0 fir_inst (
@@ -65,9 +67,22 @@ module microphones(
         .m_axis_data_tdata(fir_data)
     );
 
+    assign audio_data = fir_data;
+
     // Then we need to decimate the data to 6 kHz
 
-    // TODO
+    // logic [3:0] counter = 0;
+
+    // always_ff @(posedge clk_in) begin
+    //     if (rst_in) counter <= 0;
+    //     else if (fir_tvalid) begin
+    //         if (counter == 8) begin
+    //             counter <= 0;
+    //         end else begin
+    //             counter <= counter + 1;
+    //         end
+    //     end
+    // end
 
     // Then we pass the data through an FFT
 

@@ -17,7 +17,10 @@ module top_level (
 
   output logic [15:0] led,
   output logic [2:0] rgb0,
-  output logic [2:0] rgb1
+  output logic [2:0] rgb1,
+
+  output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
+	input wire [7:0] pmodb //input I/O used for SPI RX (in part 3)
 );
 
   // Global reset
@@ -53,7 +56,19 @@ module top_level (
     old_mic_clk <= mic_clk;
   end
 
-  assign audio_data = mic_audio[8:1];
+  logic [31:0] mic_audio_data;
+
+  microphones my_microphones(
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+
+    .mic_data(pmodb[0]),
+    .mic_sck(pmoda[0]),
+    .mic_ws(pmoda[1]),
+    .audio_data(mic_audio_data)
+  );
+
+  assign audio_data = mic_audio_data[31:24];
 
   logic audio_out;
   pdm my_pdm(
@@ -76,54 +91,54 @@ module top_level (
     else if (audio_sample_valid) audio_counter <= audio_counter + 1;
   end
 
-  logic [31:0] fft_data;
-  logic fft_valid, fft_last, fft_ready;
+  // logic [31:0] fft_data;
+  // logic fft_valid, fft_last, fft_ready;
 
-  xfft_512 xfft_512_inst (
-    .aclk(clk_m),
-    .s_axis_data_tdata({audio_data, 24'b0}),
-    .s_axis_data_tvalid(audio_sample_valid),
-    .s_axis_data_tlast(audio_counter == 511),
-    .s_axis_data_tready(rgb1[0]),
-    .s_axis_config_tdata(16'b0),
-    .s_axis_config_tvalid(1'b0),
-    .s_axis_config_tready(),
-    .m_axis_data_tdata(fft_data),
-    .m_axis_data_tvalid(fft_valid),
-    .m_axis_data_tlast(fft_last),
-    .m_axis_data_tready(fft_ready)
-  );
+  // xfft_512 xfft_512_inst (
+  //   .aclk(clk_m),
+  //   .s_axis_data_tdata({audio_data, 24'b0}),
+  //   .s_axis_data_tvalid(audio_sample_valid),
+  //   .s_axis_data_tlast(audio_counter == 511),
+  //   .s_axis_data_tready(rgb1[0]),
+  //   .s_axis_config_tdata(16'b0),
+  //   .s_axis_config_tvalid(1'b0),
+  //   .s_axis_config_tready(),
+  //   .m_axis_data_tdata(fft_data),
+  //   .m_axis_data_tvalid(fft_valid),
+  //   .m_axis_data_tlast(fft_last),
+  //   .m_axis_data_tready(fft_ready)
+  // );
 
-  biometrics biometrics_inst (
-    .led(led),
+  // biometrics biometrics_inst (
+  //   .led(led),
 
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .write_enable_in(btn[1]),
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .write_enable_in(btn[1]),
 
-    .fft_data_in(fft_data),
-    .fft_valid_in(fft_valid),
-    .fft_last_in(fft_last),
-    .fft_ready_out(fft_ready),
+  //   .fft_data_in(fft_data),
+  //   .fft_valid_in(fft_valid),
+  //   .fft_last_in(fft_last),
+  //   .fft_ready_out(fft_ready),
 
-    .ble_uart_rx_in(ble_uart_rx),
-    .ble_uart_cts_in(ble_uart_cts),
-    .ble_uart_tx_out(ble_uart_tx),
-    .ble_uart_rts_out(ble_uart_rts),
+  //   .ble_uart_rx_in(ble_uart_rx),
+  //   .ble_uart_cts_in(ble_uart_cts),
+  //   .ble_uart_tx_out(ble_uart_tx),
+  //   .ble_uart_rts_out(ble_uart_rts),
 
-    .detected_out(rgb0[0])
-  );
+  //   .detected_out(rgb0[0])
+  // );
 
 endmodule
 
 
 module pdm(
-            input wire clk_in,
-            input wire rst_in,
-            input wire signed [7:0] level_in,
-            input wire tick_in,
-            output logic pdm_out
-  );
+    input wire clk_in,
+    input wire rst_in,
+    input wire [7:0] level_in, // Change to unsigned
+    input wire tick_in,
+    output logic pdm_out
+);
 
   logic signed [8:0] error;
 
@@ -131,12 +146,13 @@ module pdm(
     if (rst_in) begin
       error <= 0;
     end else if (tick_in) begin
-      error <= error + level_in - (error > 0 ? 127 : -128);
+      error <= error + signed'(level_in) - (error > 0 ? 127 : -128); // Convert to signed
     end
   end
 
   assign pdm_out = error > 0;
 
 endmodule
+
 
 `default_nettype wire
