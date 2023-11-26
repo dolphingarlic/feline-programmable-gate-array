@@ -51,6 +51,12 @@ uart_end_to_end:
 	vvp sim/uart_end_to_end.out
 	gtkwave uart_end_to_end.vcd
 
+.PHONY: i2s_receiver
+i2s_receiver:
+	iverilog -g2012 -o sim/i2s_receiver.out sim/i2s_receiver_tb.sv hdl/sound/i2s_controller.sv hdl/sound/i2s_receiver.sv
+	vvp sim/i2s_receiver.out
+	gtkwave i2s_receiver.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
