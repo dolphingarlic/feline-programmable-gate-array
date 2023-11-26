@@ -43,7 +43,8 @@ module microphones(
     i2s_receiver i2s_receiver_inst (
         .m_axis_aclk(clk_in),
         .m_axis_aresetn(rst_in),
-        .m_axis_tready(i2s_receiver_tready),
+        // .m_axis_tready(i2s_receiver_tready),
+        .m_axis_tready(1'b1),
         .m_axis_tvalid(i2s_receiver_tvalid),
         .m_axis_tdata(i2s_receiver_tdata),
         .m_axis_tlast(i2s_receiver_tlast),
