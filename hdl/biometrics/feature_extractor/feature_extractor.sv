@@ -8,7 +8,7 @@
  */
 module feature_extractor #(
   parameter NUM_FILTERS = 26,
-  parameter NUM_FEATURES_OUT = 13,
+  parameter NUM_FEATURES_OUT = 16,
   parameter N_FFT = 512,
   parameter N_DCT = 32
 ) (

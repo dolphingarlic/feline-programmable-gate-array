@@ -63,11 +63,11 @@ async def uart_terminal():
         # print("received:", data)
         # print("length:", len(data))
         feature_buffer += data
-        if (len(feature_buffer) == 27):
+        if (len(feature_buffer) == 33):
             # TODO: the two bytes are reversed!
             new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='big', signed=True)
-                        for i in range(0, 26, 2)]
-            print([x for x in feature_buffer[:26]])
+                        for i in range(0, 32, 2)]
+            print([x for x in feature_buffer[:32]])
             print(new_feat)
             features.append(new_feat)
             feature_buffer = b""
