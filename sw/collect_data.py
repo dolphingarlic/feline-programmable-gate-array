@@ -2,6 +2,7 @@ import asyncio
 import sys
 from itertools import count, takewhile
 from typing import Iterator
+import csv
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
@@ -13,6 +14,8 @@ import numpy as np
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+
+N_FEATURES = 32
 
 feature_buffer = b""
 features = []
@@ -53,23 +56,25 @@ async def uart_terminal():
         plt.imshow(np.array(features).T, aspect='auto', interpolation=None)
         plt.figure(1, figsize=(5, 10))
         plt.show()
+        with open('sw/data/features.csv', 'w', newline='') as csvfile:
+            feature_writer = csv.writer(csvfile)
+            feature_writer.writerows(features)
         # cancelling all tasks effectively ends the program
         for task in asyncio.all_tasks():
             task.cancel()
 
     def handle_rx(_: BleakGATTCharacteristic, data: bytearray):
+        # print('Received:', data)
+        # print('Length:', len(data))
+
         global feature_buffer
-        global feature_data
-        # print("received:", data)
-        # print("length:", len(data))
+
         feature_buffer += data
-        if (len(feature_buffer) == 33):
-            # TODO: the two bytes are reversed!
-            new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='big', signed=True)
-                        for i in range(0, 32, 2)]
-            print([x for x in feature_buffer[:32]])
+        if (len(feature_buffer) >= N_FEATURES):
+            new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='little', signed=True) for i in range(0, N_FEATURES, 2)]
             print(new_feat)
-            features.append(new_feat)
+            if new_feat[0] > -16000:
+                features.append(new_feat[1:])
             feature_buffer = b""
 
     async with BleakClient(device, disconnected_callback=handle_disconnect) as client:

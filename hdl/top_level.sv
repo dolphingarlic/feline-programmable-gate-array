@@ -12,8 +12,6 @@ module top_level (
 
   input wire ble_uart_rx,
   output logic ble_uart_tx,
-  input wire ble_uart_cts,
-  output logic ble_uart_rts,
 
   output logic [15:0] led,
   output logic [2:0] rgb0,
@@ -129,9 +127,7 @@ module top_level (
     .fft_ready_out(fft_ready),
 
     .ble_uart_rx_in(ble_uart_rx),
-    .ble_uart_cts_in(ble_uart_cts),
     .ble_uart_tx_out(ble_uart_tx),
-    .ble_uart_rts_out(ble_uart_rts),
 
     .detected_out(rgb0[0])
   );

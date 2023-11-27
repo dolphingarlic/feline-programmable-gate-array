@@ -34,7 +34,7 @@ module uart_tx #(
       if (state == IDLE) begin
         done_out <= 0;
         // Start sending data
-        if (enable_in) begin
+        if (enable_in && !done_out) begin
           state <= WRITE;
           counter <= 0;
           curr_bit <= 0;

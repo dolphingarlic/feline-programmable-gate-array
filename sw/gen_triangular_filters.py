@@ -1,7 +1,7 @@
 from math import exp, log, log2, ceil
 
 N_FFT = 512
-NUM_FILTERS = 26
+NUM_FILTERS = 32
 FREQ_LOWERBOUND_HZ = 20
 FREQ_UPPERBOUND_HZ = 3000
 SAMPLE_RATE_HZ = 6000

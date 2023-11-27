@@ -48,9 +48,10 @@ module biometrics (
   ///////////////
   // BLUETOOTH //
   ///////////////
-  bluetooth bluetooth_inst (
-    .led(led),
+  logic [7:0] ble_data;
+  logic ble_valid;
 
+  bluetooth bluetooth_inst (
     .clk_in(clk_in),
     .rst_in(rst_in),
     .write_enable_in(write_enable_in),
@@ -60,8 +61,8 @@ module biometrics (
     .feature_last_in(feature_last),
     .feature_ready_out(feature_ready),
 
-    .ble_valid_out(),
-    .ble_data_out(),
+    .ble_valid_out(ble_valid),
+    .ble_data_out(ble_data),
 
     .ble_uart_rx_in(ble_uart_rx_in),
     .ble_uart_tx_out(ble_uart_tx_out)
@@ -70,7 +71,13 @@ module biometrics (
   ////////////////////
   // CLASSIFICATION //
   ////////////////////
-  assign detected_out = ble_uart_tx_out; // TODO: fix me
+  logic detected_buffer;
+
+  always_ff @(posedge clk_in) begin
+    if (ble_valid) detected_buffer <= (ble_data != 0);
+  end
+
+  assign detected_out = write_enable_in && detected_buffer; // TODO: fix me
 
 endmodule
 

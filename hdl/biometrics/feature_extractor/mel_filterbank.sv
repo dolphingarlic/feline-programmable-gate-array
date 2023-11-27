@@ -93,6 +93,18 @@ module mel_filterbank #(
     .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[24]));
   triangular_filter_25 triangular_filter_inst_25 (.clk_in(clk_in), .rst_in(rst_in),
     .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[25]));
+  triangular_filter_26 triangular_filter_inst_26 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[26]));
+  triangular_filter_27 triangular_filter_inst_27 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[27]));
+  triangular_filter_28 triangular_filter_inst_28 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[28]));
+  triangular_filter_29 triangular_filter_inst_29 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[29]));
+  triangular_filter_30 triangular_filter_inst_30 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[30]));
+  triangular_filter_31 triangular_filter_inst_31 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_data_in), .k_in(k_curr), .filtered_out(filter_buffer[31]));
 
 
   always_ff @(posedge clk_in) begin

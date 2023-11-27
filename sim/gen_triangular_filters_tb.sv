@@ -112,6 +112,30 @@ module gen_triangular_filters_tb;
   triangular_filter_25 uut_25 (.clk_in(clk_in), .rst_in(rst_in),
     .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_25));
 
+  logic [31:0] filtered_out_26;
+  triangular_filter_26 uut_26 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_26));
+
+  logic [31:0] filtered_out_27;
+  triangular_filter_27 uut_27 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_27));
+
+  logic [31:0] filtered_out_28;
+  triangular_filter_28 uut_28 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_28));
+
+  logic [31:0] filtered_out_29;
+  triangular_filter_29 uut_29 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_29));
+
+  logic [31:0] filtered_out_30;
+  triangular_filter_30 uut_30 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_30));
+
+  logic [31:0] filtered_out_31;
+  triangular_filter_31 uut_31 (.clk_in(clk_in), .rst_in(rst_in),
+    .power_in(power_in), .k_in(k_in), .filtered_out(filtered_out_31));
+
 
   always begin
       #5; // 100MHz clock

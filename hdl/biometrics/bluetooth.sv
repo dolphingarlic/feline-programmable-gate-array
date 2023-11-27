@@ -53,8 +53,10 @@ module bluetooth #(
       frame_write_enable <= 0;
       fifo_last_buffer <= 0;
     end else begin
-      if (fifo_last) frame_write_enable <= write_enable_in;
-      fifo_last_buffer <= fifo_last;
+      if (fifo_ready && fifo_valid) begin
+        if (fifo_last) frame_write_enable <= write_enable_in;
+        fifo_last_buffer <= fifo_last;
+      end
     end
   end
 
@@ -94,14 +96,20 @@ module bluetooth #(
         if (fifo_valid) begin
           next_uart_tx_data <= fifo_data[15:8];
           state <= DATA;
-          uart_tx_data <= fifo_data[7:0];
+          // Set the lowest bit to be 1 so the output doesn't flush on this step
+          uart_tx_data <= {fifo_data[7:1], 1'b1};
           curr_byte <= 0;
         end
       end else if (state == DATA && uart_tx_done) begin
-        if (fifo_last_buffer) begin
-          // Send a newline character (0x0A) to flush the output
-          uart_tx_data <= 8'h0A;
-          state <= FLUSH;
+        if (fifo_last_buffer && curr_byte) begin
+          if (uart_tx_data != 8'h0A) begin
+            // Send a newline character (0x0A) to flush the output
+            uart_tx_data <= 8'h0A;
+            state <= FLUSH;
+          end else begin
+            // ... but not if the previous byte sent was already 0x0A!
+            state <= IDLE;
+          end
         end else begin
           uart_tx_data <= next_uart_tx_data;
           if (curr_byte) state <= IDLE;
