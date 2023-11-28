@@ -71,6 +71,7 @@ module i2s_receiver_tb;
     sck_counter = 0;
 
     for (int i = 0; i <= 8'hFF; i = i + 1) begin
+        $display("i is %d", i);
         j = i << 24;
         while (sck_counter < 32) begin
             if (sck == 1'b1 && sck_prev == 1'b0) begin

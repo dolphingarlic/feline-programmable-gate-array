@@ -1,0 +1,28 @@
+---
+cores:
+  # io_core:
+  #   type: io
+
+  #   inputs:
+  #     sck: 1
+  #     ws: 1
+  #     data: 1
+  #     audio_data: 16
+  my_logic_analyzer:
+    type: logic_analyzer
+    sample_depth: 512
+    # trigger_loc: 256
+    # capture_mode: incremental
+
+    probes:
+      audio_data: 16
+      ws: 1
+      sck: 1
+
+    triggers:
+      - sck RISING
+
+uart:
+  port: "/dev/cu.usbserial-88742923012B1"
+  baudrate: 115200
+  clock_freq: 100000000

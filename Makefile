@@ -51,6 +51,18 @@ uart_end_to_end:
 	vvp sim/uart_end_to_end.out
 	gtkwave vcd/uart_end_to_end.vcd
 
+.PHONY: i2s_receiver
+i2s_receiver:
+	iverilog -g2012 -o sim/i2s_receiver.out sim/i2s_receiver_tb.sv hdl/sound/i2s_controller.sv hdl/sound/i2s_receiver.sv
+	vvp sim/i2s_receiver.out
+	gtkwave i2s_receiver.vcd
+
+.PHONY: microphones_no_ip
+microphones_no_ip:
+	iverilog -g2012 -o sim/microphones_no_ip.out sim/microphones_tb.sv hdl/sound/i2s_controller.sv hdl/sound/i2s_receiver.sv hdl/sound/microphones.sv
+	vvp sim/microphones_no_ip.out
+	gtkwave microphones_no_ip.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*

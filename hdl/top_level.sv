@@ -6,16 +6,20 @@ module top_level (
   input wire [15:0] sw,
   input wire [3:0] btn,
 
-  input wire  mic_data, //microphone data
   output logic spkl, spkr, //speaker outputs
-  output logic mic_clk, //microphone clock
 
   input wire ble_uart_rx,
   output logic ble_uart_tx,
 
+  input wire uart_rxd,
+  output logic uart_txd,
+
   output logic [15:0] led,
   output logic [2:0] rgb0,
-  output logic [2:0] rgb1
+  output logic [2:0] rgb1,
+
+  output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
+	input wire [7:0] pmodb //input I/O used for SPI RX (in part 3)
 );
 
   // Global reset
@@ -29,60 +33,45 @@ module top_level (
     .clk_out(clk_m)
   );
 
-  // BEGIN STUFF FROM LAB 7
+  // Capture audio from the microphones
 
-  logic [8:0] m_clock_counter;
+  logic signed [15:0] mic_audio_data;
+  logic ws;
+  logic sck;
+
+  assign pmoda[0] = sck;
+  assign pmoda[1] = ws;
+
   logic audio_sample_valid;
-  logic signed [8:0] mic_audio;
-  logic[7:0] audio_data;
 
-  logic [8:0] pdm_tally;
-  logic [9:0] pdm_counter;
+  microphones my_microphones(
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
 
-  localparam PDM_COUNT_PERIOD = 32;
-  localparam NUM_PDM_SAMPLES = 512;
+    .mic_data(pmodb[0]),
+    .mic_sck(sck),
+    .mic_ws(ws),
+    .audio_data(mic_audio_data)
+    .audio_valid(audio_sample_valid)
+  );
 
-  logic old_mic_clk;
-  logic sampled_mic_data;
-  logic pdm_signal_valid;
+  manta manta_inst (
+    .clk(clk_m),
 
-  assign pdm_signal_valid = mic_clk && ~old_mic_clk;
+    .rx(uart_rxd),
+    .tx(uart_txd),
+    
+    .ws(ws),
+    .sck(sck),
+    .audio_data({mic_audio_data}));
 
-  logic [1:0] pwm_counter;
-  logic pwm_step;
-  assign pwm_step = (pwm_counter==2'b11);
-
-  always_ff @(posedge clk_m)begin
-    pwm_counter <= pwm_counter+1;
-  end
-
-  always_ff @(posedge clk_m)begin
-    mic_clk <= m_clock_counter < PDM_COUNT_PERIOD/2;
-    m_clock_counter <= (m_clock_counter==PDM_COUNT_PERIOD-1)?0:m_clock_counter+1;
-    old_mic_clk <= mic_clk;
-  end
-  always_ff @(posedge clk_m)begin
-    if (pdm_signal_valid)begin
-      sampled_mic_data    <= mic_data;
-      pdm_counter         <= (pdm_counter==NUM_PDM_SAMPLES)?0:pdm_counter + 1;
-      pdm_tally           <= (pdm_counter==NUM_PDM_SAMPLES)?mic_data
-                                                            :pdm_tally+mic_data;
-      audio_sample_valid  <= (pdm_counter==NUM_PDM_SAMPLES);
-      mic_audio           <= (pdm_counter==NUM_PDM_SAMPLES)?{~pdm_tally[8],pdm_tally[7:0]}
-                                                            :mic_audio;
-    end else begin
-      audio_sample_valid <= 0;
-    end
-  end
-
-  assign audio_data = mic_audio[8:1];
+  // Playback audio to headphones
 
   logic audio_out;
   pdm my_pdm(
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .level_in(audio_data),
-    .tick_in(pdm_signal_valid),
+    .level_in(mic_audio_data),
     .pdm_out(audio_out)
   );
 
@@ -103,7 +92,7 @@ module top_level (
 
   xfft_512 xfft_512_inst (
     .aclk(clk_m),
-    .s_axis_data_tdata({audio_data, 24'b0}),
+    .s_axis_data_tdata({mic_audio_data, 16'b0}),
     .s_axis_data_tvalid(audio_sample_valid),
     .s_axis_data_tlast(audio_counter == 511),
     .s_axis_data_tready(rgb1[0]),
@@ -131,29 +120,6 @@ module top_level (
 
     .detected_out(rgb0[0])
   );
-
-endmodule
-
-
-module pdm(
-            input wire clk_in,
-            input wire rst_in,
-            input wire signed [7:0] level_in,
-            input wire tick_in,
-            output logic pdm_out
-  );
-
-  logic signed [8:0] error;
-
-  always_ff @(posedge clk_in) begin
-    if (rst_in) begin
-      error <= 0;
-    end else if (tick_in) begin
-      error <= error + level_in - (error > 0 ? 127 : -128);
-    end
-  end
-
-  assign pdm_out = error > 0;
 
 endmodule
 
