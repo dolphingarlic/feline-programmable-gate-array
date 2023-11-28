@@ -44,6 +44,8 @@ module top_level (
   assign pmoda[0] = sck;
   assign pmoda[1] = ws;
 
+  logic audio_sample_valid;
+
   microphones my_microphones(
     .clk_in(clk_m),
     .rst_in(sys_rst),
@@ -52,6 +54,7 @@ module top_level (
     .mic_sck(sck),
     .mic_ws(ws),
     .audio_data(mic_audio_data)
+    .audio_valid(audio_sample_valid)
   );
 
   manta manta_inst (
@@ -79,50 +82,50 @@ module top_level (
 
   // END LAB 7 STUFF
 
-  // logic [8:0] audio_counter;
+  logic [8:0] audio_counter;
 
-  // always_ff @(posedge clk_m) begin
-  //   if (sys_rst) audio_counter <= 0;
-  //   else if (audio_sample_valid) audio_counter <= audio_counter + 1;
-  // end
+  always_ff @(posedge clk_m) begin
+    if (sys_rst) audio_counter <= 0;
+    else if (audio_sample_valid) audio_counter <= audio_counter + 1;
+  end
 
-  // logic [31:0] fft_data;
-  // logic fft_valid, fft_last, fft_ready;
+  logic [31:0] fft_data;
+  logic fft_valid, fft_last, fft_ready;
 
-  // xfft_512 xfft_512_inst (
-  //   .aclk(clk_m),
-  //   .s_axis_data_tdata({audio_data, 24'b0}),
-  //   .s_axis_data_tvalid(audio_sample_valid),
-  //   .s_axis_data_tlast(audio_counter == 511),
-  //   .s_axis_data_tready(rgb1[0]),
-  //   .s_axis_config_tdata(16'b0),
-  //   .s_axis_config_tvalid(1'b0),
-  //   .s_axis_config_tready(),
-  //   .m_axis_data_tdata(fft_data),
-  //   .m_axis_data_tvalid(fft_valid),
-  //   .m_axis_data_tlast(fft_last),
-  //   .m_axis_data_tready(fft_ready)
-  // );
+  xfft_512 xfft_512_inst (
+    .aclk(clk_m),
+    .s_axis_data_tdata({mic_audio_data, 16'b0}),
+    .s_axis_data_tvalid(audio_sample_valid),
+    .s_axis_data_tlast(audio_counter == 511),
+    .s_axis_data_tready(rgb1[0]),
+    .s_axis_config_tdata(16'b0),
+    .s_axis_config_tvalid(1'b0),
+    .s_axis_config_tready(),
+    .m_axis_data_tdata(fft_data),
+    .m_axis_data_tvalid(fft_valid),
+    .m_axis_data_tlast(fft_last),
+    .m_axis_data_tready(fft_ready)
+  );
 
-  // biometrics biometrics_inst (
-  //   .led(led),
+  biometrics biometrics_inst (
+    .led(led),
 
-  //   .clk_in(clk_m),
-  //   .rst_in(sys_rst),
-  //   .write_enable_in(btn[1]),
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .write_enable_in(btn[1]),
 
-  //   .fft_data_in(fft_data),
-  //   .fft_valid_in(fft_valid),
-  //   .fft_last_in(fft_last),
-  //   .fft_ready_out(fft_ready),
+    .fft_data_in(fft_data),
+    .fft_valid_in(fft_valid),
+    .fft_last_in(fft_last),
+    .fft_ready_out(fft_ready),
 
-  //   .ble_uart_rx_in(ble_uart_rx),
-  //   .ble_uart_cts_in(ble_uart_cts),
-  //   .ble_uart_tx_out(ble_uart_tx),
-  //   .ble_uart_rts_out(ble_uart_rts),
+    .ble_uart_rx_in(ble_uart_rx),
+    .ble_uart_cts_in(ble_uart_cts),
+    .ble_uart_tx_out(ble_uart_tx),
+    .ble_uart_rts_out(ble_uart_rts),
 
-  //   .detected_out(rgb0[0])
-  // );
+    .detected_out(rgb0[0])
+  );
 
 endmodule
 
