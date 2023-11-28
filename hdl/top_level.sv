@@ -6,14 +6,15 @@ module top_level (
   input wire [15:0] sw,
   input wire [3:0] btn,
 
-  input wire  mic_data, //microphone data
   output logic spkl, spkr, //speaker outputs
-  output logic mic_clk, //microphone clock
 
   input wire ble_uart_rx,
   output logic ble_uart_tx,
   input wire ble_uart_cts,
   output logic ble_uart_rts,
+
+  input wire uart_rxd,
+  output logic uart_txd,
 
   output logic [15:0] led,
   output logic [2:0] rgb0,
@@ -34,49 +35,42 @@ module top_level (
     .clk_out(clk_m)
   );
 
-  // BEGIN STUFF FROM LAB 7
-
-  logic [8:0] m_clock_counter;
-  logic audio_sample_valid;
-  logic signed [8:0] mic_audio;
-  logic[7:0] audio_data;
-
-  localparam PDM_COUNT_PERIOD = 32;
-  localparam NUM_PDM_SAMPLES = 512;
-
-  logic old_mic_clk;
-  logic sampled_mic_data;
-  logic pdm_signal_valid;
-
-  assign pdm_signal_valid = mic_clk && ~old_mic_clk;
-
-  always_ff @(posedge clk_m)begin
-    mic_clk <= m_clock_counter < PDM_COUNT_PERIOD/2;
-    m_clock_counter <= (m_clock_counter==PDM_COUNT_PERIOD-1)?0:m_clock_counter+1;
-    old_mic_clk <= mic_clk;
-  end
+  // Capture audio from the microphones
 
   logic signed [15:0] mic_audio_data;
+  logic ws;
+  logic sck;
+
+  assign pmoda[0] = sck;
+  assign pmoda[1] = ws;
 
   microphones my_microphones(
     .clk_in(clk_m),
     .rst_in(sys_rst),
 
     .mic_data(pmodb[0]),
-    .mic_sck(pmoda[0]),
-    .mic_ws(pmoda[1]),
-    .filtered(sw[0]),
+    .mic_sck(sck),
+    .mic_ws(ws),
     .audio_data(mic_audio_data)
   );
 
-  assign audio_data = mic_audio_data[15:8];
+  manta manta_inst (
+    .clk(clk_m),
+
+    .rx(uart_rxd),
+    .tx(uart_txd),
+    
+    .ws(ws),
+    .sck(sck),
+    .audio_data({mic_audio_data}));
+
+  // Playback audio to headphones
 
   logic audio_out;
   pdm my_pdm(
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .level_in(audio_data),
-    .tick_in(pdm_signal_valid),
+    .level_in(mic_audio_data),
     .pdm_out(audio_out)
   );
 
@@ -85,12 +79,12 @@ module top_level (
 
   // END LAB 7 STUFF
 
-  logic [8:0] audio_counter;
+  // logic [8:0] audio_counter;
 
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) audio_counter <= 0;
-    else if (audio_sample_valid) audio_counter <= audio_counter + 1;
-  end
+  // always_ff @(posedge clk_m) begin
+  //   if (sys_rst) audio_counter <= 0;
+  //   else if (audio_sample_valid) audio_counter <= audio_counter + 1;
+  // end
 
   // logic [31:0] fft_data;
   // logic fft_valid, fft_last, fft_ready;
@@ -131,28 +125,5 @@ module top_level (
   // );
 
 endmodule
-
-module pdm(
-            input wire clk_in,
-            input wire rst_in,
-            input wire signed [7:0] level_in,
-            input wire tick_in,
-            output logic pdm_out
-  );
-
-  logic signed [8:0] error;
-
-  always_ff @(posedge clk_in) begin
-    if (rst_in) begin
-      error <= 0;
-    end else if (tick_in) begin
-      error <= error + level_in - (error > 0 ? 127 : -128);
-    end
-  end
-
-  assign pdm_out = error > 0;
-
-endmodule
-
 
 `default_nettype wire

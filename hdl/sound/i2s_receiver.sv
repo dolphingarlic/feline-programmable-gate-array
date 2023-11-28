@@ -11,7 +11,7 @@ module i2s_receiver #(
     parameter DATA_WIDTH = 32
 ) (
     // AXI-Streaming interface
-    input wire m_axis_aclk, // Assumes is 100 mHz
+    input wire m_axis_aclk, // Assumes is 98.304MHz
     input wire m_axis_aresetn, // Active low reset
     input wire m_axis_tready, // Indicates secondary ready to receive
     output logic m_axis_tvalid, // Indicates have data to send
@@ -24,49 +24,43 @@ module i2s_receiver #(
     input wire sd
 );
 
-    logic sckd, sckdd, sck_rise, sck_fall;
+    logic sckd, sck_rise, sck_fall;
 
-    assign sck_rise = sckd && sckdd;
-    assign sck_fall = !sckd && sckdd;
+    assign sck_rise = sck && !sckd;
+    assign sck_fall = !sck && sckd;
 
     logic wsd, wsdd, wsp;
-    assign wsp = wsd ^ wsdd;
+    assign wsp = ws ^ wsd;
 
     logic [$clog2(DATA_WIDTH + 1) - 1:0] counter;
 
-    logic [0:DATA_WIDTH - 1] data;
+    logic [DATA_WIDTH - 1 : 0] data;
 
     always_ff @(posedge m_axis_aclk) begin
-        if (sck_rise) begin
+        if (sck_fall) begin
             if (wsp) begin
                 data <= 0;
                 m_axis_tdata <= data;
-            end
-            
-            if (counter < DATA_WIDTH) begin
-                data[counter] <= sd;
+                counter <= 0;
+            end else if (counter < DATA_WIDTH) begin
+                data[(DATA_WIDTH - 1) - counter] <= sd;
+                counter <= counter + 1;
             end
 
             wsdd <= wsd;
             wsd <= ws;
-        end else if (sck_fall) begin
-            if (wsp) begin
-                counter <= 0;
-            end else if (counter < DATA_WIDTH) begin
-                counter <= counter + 1;
-            end
         end
 
-        sckd <= sck;
-        sckdd <= sckd;   
+        sckd <= sck;  
     end
 
     always_ff @(posedge m_axis_aclk) begin
         if (!m_axis_aresetn) begin
             m_axis_tvalid <= 0;
-        end else if (sck_rise && wsp) begin
-            m_axis_tvalid <= (^data !== 1'bx);
-            m_axis_tlast <= !wsd;
+        end else if (sck_fall && wsp) begin
+            // m_axis_tvalid <= (^data !== 1'bx); // to get rid of werid simulation issue
+            m_axis_tvalid <= 1;
+            m_axis_tlast <= wsd;
         end else if (m_axis_tready) begin
             m_axis_tvalid <= 0;
         end

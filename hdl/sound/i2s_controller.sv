@@ -14,7 +14,7 @@ module i2s_controller #(
     output logic ws
 );
 
-    // Generate a 3.072Mhz clock signal for the I2S receiver (48Khz * 64 = 3.072Mhz)
+    // Generate a 4.096MHz clock signal for the I2S receiver (64Khz * 64 = 4.096Mhz)
     logic [4:0] aud_clk_count;
 
     always_ff @(posedge clk_in) begin

@@ -3,11 +3,11 @@
 
 /**
  * @brief Microphone module
- * @details This module reads from the 4 microphones, applies a low-pass filter, decimates, calculates the fft, and finally outputs that data
+ * @details This module reads from the 4 microphones, applies a low-pass filter, decimates, and adjusts the gain
 */
 
 module microphones(
-    input wire clk_in,
+    input wire clk_in, // Takes the 98.304MHz clock
     input wire rst_in,
 
     // Microphone signals
@@ -15,8 +15,8 @@ module microphones(
     output logic mic_sck,
     output logic mic_ws,
 
-    input wire filtered,
-    output logic signed [15:0] audio_data
+    output logic signed [15:0] audio_data,
+    output logic audio_valid
 );
     
     // I2S needs a main controller to generate the sck and ws signals
@@ -36,7 +36,7 @@ module microphones(
     // We create an I2S receiver (in secondary mode) to read data from the microphones
 
     logic i2s_receiver_tready;
-    logic i2s_receiver_tvalid = 0;
+    logic i2s_receiver_tvalid;
 
     logic [31:0] i2s_receiver_tdata;
     logic i2s_receiver_tlast;
@@ -54,13 +54,20 @@ module microphones(
         .sd(mic_data)
     ); 
 
-    // Then we pass the data to an FIR filter (coefficents generated with matlab fir1 function)
+    // We only output on the left channel (this efficiently halves the sample rate to 32 kHz)
+
+    logic signed [23:0] signed_i2s_data;
+
+    always_ff @(posedge clk_in) begin
+        if (i2s_receiver_tvalid && !i2s_receiver_tlast) begin
+            signed_i2s_data <= signed'(i2s_receiver_tdata[31:8]);
+        end
+    end
+
+    // Then we pass the data to an FIR filter (coefficents generated with matlab fdatool function)
 
     logic signed [15:0] fir_data;
     logic fir_tvalid;
-
-    logic signed [23:0] signed_i2s_data;
-    assign signed_i2s_data = signed'(i2s_receiver_tdata[31:8]);
 
     fir_compiler_1 fir_inst (
         .aclk(clk_in),
@@ -71,26 +78,8 @@ module microphones(
         .m_axis_data_tdata(fir_data)
     );
 
-    assign audio_data = filtered ? fir_data : signed_i2s_data[23:8];
-
-    // Then we need to decimate the data to 6 kHz
-
-    // logic [3:0] counter = 0;
-
-    // always_ff @(posedge clk_in) begin
-    //     if (rst_in) counter <= 0;
-    //     else if (fir_tvalid) begin
-    //         if (counter == 8) begin
-    //             counter <= 0;
-    //         end else begin
-    //             counter <= counter + 1;
-    //         end
-    //     end
-    // end
-
-    // Then we pass the data through an FFT
-
-    // TODO
+    assign audio_data = fir_data << 6; // We apply gain to the audio since top bits aren't useful
+    assign audio_valid = fir_tvalid;
 endmodule
 
 `default_nettype wire
