@@ -4,7 +4,7 @@
     "xci_name": "cordic_0",
     "component_reference": "xilinx.com:ip:cordic:6.0",
     "ip_revision": "19",
-    "gen_directory": "../../../../project_1.gen/sources_1/ip/cordic_0",
+    "gen_directory": "ip/cordic_0",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "cordic_0", "resolve_type": "user", "usage": "all" } ],
@@ -82,7 +82,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "19" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../project_1.gen/sources_1/ip/cordic_0" } ],
+        "OUTPUTDIR": [ { "value": "ip/cordic_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2023.1" } ],

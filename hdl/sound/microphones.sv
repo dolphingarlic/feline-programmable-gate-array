@@ -17,7 +17,7 @@ module microphones(
 
     output logic signed [15:0] audio_data,
     output logic audio_valid,
-    input logic audio_ready,
+    input logic audio_ready
 );
     
     // I2S needs a main controller to generate the sck and ws signals

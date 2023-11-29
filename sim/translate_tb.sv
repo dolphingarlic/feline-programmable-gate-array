@@ -44,7 +44,7 @@ module translate_tb;
 
     #10;
 
-    while (valid_out = 1'b0) begin
+    while (valid_out == 1'b0) begin
         #10;
     end
 
