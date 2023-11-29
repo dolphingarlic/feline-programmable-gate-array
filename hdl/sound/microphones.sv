@@ -16,7 +16,8 @@ module microphones(
     output logic mic_ws,
 
     output logic signed [15:0] audio_data,
-    output logic audio_valid
+    output logic audio_valid,
+    input logic audio_ready,
 );
     
     // I2S needs a main controller to generate the sck and ws signals
@@ -75,7 +76,8 @@ module microphones(
         .s_axis_data_tready(i2s_receiver_tready),
         .s_axis_data_tdata(signed_i2s_data), // microphones only output 24 bits of data
         .m_axis_data_tvalid(fir_tvalid),
-        .m_axis_data_tdata(fir_data)
+        .m_axis_data_tdata(fir_data),
+        .m_axis_data_tready(audio_ready)
     );
 
     assign audio_data = fir_data << 6; // We apply gain to the audio since top bits aren't useful

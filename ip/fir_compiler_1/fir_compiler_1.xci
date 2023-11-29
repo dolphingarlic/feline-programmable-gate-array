@@ -4,7 +4,7 @@
     "xci_name": "fir_compiler_1",
     "component_reference": "xilinx.com:ip:fir_compiler:7.2",
     "ip_revision": "19",
-    "gen_directory": "../../../../project_1.gen/sources_1/ip/fir_compiler_1",
+    "gen_directory": "./ip/fir_compiler_1",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "fir_compiler_1", "resolve_type": "user", "usage": "all" } ],
@@ -178,7 +178,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "19" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../project_1.gen/sources_1/ip/fir_compiler_1" } ],
+        "OUTPUTDIR": [ { "value": "./ip/fir_compiler_1" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2023.1" } ],
