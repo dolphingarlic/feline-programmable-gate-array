@@ -18,8 +18,12 @@ module top_level (
   output logic [2:0] rgb0,
   output logic [2:0] rgb1,
 
-  output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
-	input wire [7:0] pmodb //input I/O used for SPI RX (in part 3)
+  // output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
+	// input wire [7:0] pmodb //input I/O used for SPI RX (in part 3)
+  input wire mic_data,
+  output logic sck,
+  output logic ws,
+  output logic sel
 );
 
   // Global reset
@@ -36,34 +40,20 @@ module top_level (
   // Capture audio from the microphones
 
   logic signed [15:0] mic_audio_data;
-  logic ws;
-  logic sck;
-
-  assign pmoda[0] = sck;
-  assign pmoda[1] = ws;
 
   logic audio_sample_valid;
 
+  assign sel = 0;
   microphones my_microphones(
     .clk_in(clk_m),
     .rst_in(sys_rst),
 
-    .mic_data(pmodb[0]),
+    .mic_data(mic_data),
     .mic_sck(sck),
     .mic_ws(ws),
-    .audio_data(mic_audio_data)
+    .audio_data(mic_audio_data),
     .audio_valid(audio_sample_valid)
   );
-
-  manta manta_inst (
-    .clk(clk_m),
-
-    .rx(uart_rxd),
-    .tx(uart_txd),
-    
-    .ws(ws),
-    .sck(sck),
-    .audio_data({mic_audio_data}));
 
   // Playback audio to headphones
 

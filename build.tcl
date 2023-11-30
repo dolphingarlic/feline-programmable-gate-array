@@ -36,7 +36,7 @@ set_part $partNum
 read_ip ./ip/xfft_128/xfft_128.xci
 read_ip ./ip/xfft_512/xfft_512.xci
 read_ip ./ip/axis_data_fifo_2byte_256/axis_data_fifo_2byte_256.xci
-read_ip ./ip/fir_compiler_0/fir_compiler_0.xci
+read_ip ./ip/fir_compiler_1/fir_compiler_1.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 

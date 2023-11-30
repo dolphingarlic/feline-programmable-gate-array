@@ -39,7 +39,6 @@ async def uart_terminal():
 
     data = np.genfromtxt('sw/data/features.csv', delimiter=',')
     svm_model = OneClassSVM(kernel='linear', nu=0.1).fit(data)
-    gmm_model = GaussianMixture().fit(data)
 
     def match_nus_uuid(device: BLEDevice, adv: AdvertisementData):
         # This assumes that the device includes the UART service UUID in the
@@ -69,12 +68,12 @@ async def uart_terminal():
         feature_buffer += data
         if (len(feature_buffer) >= N_FEATURES):
             new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='little', signed=True) for i in range(0, N_FEATURES, 2)]
-            print(new_feat)
             svm_pred = svm_model.predict(np.array([new_feat[1:]]))[0]
 
-            detected = new_feat[0] > -16000 and svm_pred == 1
-            if new_feat[0] > -16000:
-                print(gmm_model.score(np.array([new_feat[1:]])))
+            detected = new_feat[0] > -14000 and svm_pred == 1
+            if new_feat[0] > -14000:
+                print(detected)
+                # print(gmm_model.score(np.array([new_feat[1:]])))
 
             feature_buffer = b""
 

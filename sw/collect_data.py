@@ -53,9 +53,9 @@ async def uart_terminal():
 
     def handle_disconnect(_: BleakClient):
         print("Device was disconnected, goodbye.")
-        plt.imshow(np.array(features).T, aspect='auto', interpolation=None)
-        plt.figure(1, figsize=(5, 10))
-        plt.show()
+        # plt.imshow(np.array(features).T, aspect='auto', interpolation=None)
+        # plt.figure(1, figsize=(5, 10))
+        # plt.show()
         with open('sw/data/features.csv', 'w', newline='') as csvfile:
             feature_writer = csv.writer(csvfile)
             feature_writer.writerows(features)
@@ -64,51 +64,24 @@ async def uart_terminal():
             task.cancel()
 
     def handle_rx(_: BleakGATTCharacteristic, data: bytearray):
-        # print('Received:', data)
-        # print('Length:', len(data))
-
         global feature_buffer
 
         feature_buffer += data
         if (len(feature_buffer) >= N_FEATURES):
             new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='little', signed=True) for i in range(0, N_FEATURES, 2)]
-            print(new_feat)
-            if new_feat[0] > -16000:
+            if new_feat[0] > -14000:
+                print(len(features) + 1)
+                print(new_feat)
                 features.append(new_feat[1:])
             feature_buffer = b""
 
     async with BleakClient(device, disconnected_callback=handle_disconnect) as client:
         await client.start_notify(UART_TX_CHAR_UUID, handle_rx)
-
-        print("Connected, start typing and press ENTER...")
+        print("Connected")
 
         loop = asyncio.get_running_loop()
-        nus = client.services.get_service(UART_SERVICE_UUID)
-        rx_char = nus.get_characteristic(UART_RX_CHAR_UUID)
-
         while True:
-            # This waits until you type a line and press ENTER.
-            # A real terminal program might put stdin in raw mode so that things
-            # like CTRL+C get passed to the remote device.
             data = await loop.run_in_executor(None, sys.stdin.buffer.readline)
-
-            # data will be empty on EOF (e.g. CTRL+D on *nix)
-            if not data:
-                break
-
-            # some devices, like devices running MicroPython, expect Windows
-            # line endings (uncomment line below if needed)
-            # data = data.replace(b"\n", b"\r\n")
-            # data = data.replace(b"\n", b"")
-
-            # Writing without response requires that the data can fit in a
-            # single BLE packet. We can use the max_write_without_response_size
-            # property to split the data into chunks that will fit.
-
-            for s in sliced(data, rx_char.max_write_without_response_size):
-                await client.write_gatt_char(rx_char, s, response=False)
-
-            print("sent:", data)
 
 
 if __name__ == "__main__":

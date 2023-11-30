@@ -17,7 +17,7 @@
         "Filter_Type": [ { "value": "Decimation", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "Rate_Change_Type": [ { "value": "Integer", "resolve_type": "user", "usage": "all" } ],
         "Interpolation_Rate": [ { "value": "1", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
-        "Decimation_Rate": [ { "value": "4", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "Decimation_Rate": [ { "value": "8", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "Zero_Pack_Factor": [ { "value": "1", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "Channel_Sequence": [ { "value": "Basic", "resolve_type": "user", "usage": "all" } ],
         "Number_Channels": [ { "value": "1", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
