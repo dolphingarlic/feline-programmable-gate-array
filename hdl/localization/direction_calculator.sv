@@ -11,56 +11,64 @@
     We pay particular attention to the bit sizes since they grow really quickly with all the adding
     and multiplying.
 
-    TODO: Improve this code!
+    Microphone data is phase, mag each 16 bits in 3.13 fixed point form
 */
 
-module direction_calculator #(
-    parameter PERIPHERAL_MICS = 3,
-    parameter DATA_WIDTH = 32
-) (
+module direction_calculator(
     // CENTRAL MICROPHONE
-    input logic [DATA_WIDTH - 1: 0] central_mic,
-    input logic [(DATA_WIDTH / 2) - 1: 0] central_mic_location [2],
+    input logic [31:0] central_mic,
     // PERIPHERAL MICROPHONES
-    input logic [DATA_WIDTH - 1: 0] peripheral_mics [PERIPHERAL_MICS-1:0],
-    input logic [(DATA_WIDTH / 2) - 1: 0] mic_locations [PERIPHERAL_MICS-1:0][2],
-    // OUTPUT
-    output logic signed [DATA_WIDTH - 1:0] vector,
-    output logic signed [(DATA_WIDTH / 2):0] phase_differences [PERIPHERAL_MICS - 1:0]
+    input logic [31:0] peripheral_mics [3],
+    // OUTPUT (x,y each 16 bits 5.11 fixed point)
+    output logic signed [31:0] vector
 );
-
+    logic signed [16:0] phase_differences [2:0]; // Each is 17 bits 4.13 fixed point
+    // NOTE: Since we constraint phase_differences to be -pi to pi we know it actually only takes up 16 bits 
+    logic signed [15:0] scaled_locations [2:0][1:0]; // Each loc has x,y. Both are 3.13
+    logic signed [17:0] summed_locations [2]; // x, y both are 18 bits 5.13 fixed point
+   
     always_comb begin
-        for (integer i = 0; i < PERIPHERAL_MICS; i = i + 1) begin: loop
-            phase_differences[i] = signed'(peripheral_mics[i][DATA_WIDTH - 1:DATA_WIDTH / 2]) - signed'(central_mic[DATA_WIDTH - 1:DATA_WIDTH / 2]);
+
+        for (integer i = 0; i < 3; i = i + 1) begin: loop
+            phase_differences[i] = signed'(peripheral_mics[i][31:16]) - signed'(central_mic[31:16]);
 
             // We need to constraint the phase_difference to be between -pi and pi
-            
-            // 16'h6488 is pi in 2Q13 format.
-            if (phase_differences[i] > signed'(16'h6488)) begin
+            if (phase_differences[i] > signed'(16'h6488)) begin // 16'h6488 is pi in 2Q13 format.
                 // We want to subtract 2pi = 16'hC910 in 2Q13
                 phase_differences[i] = phase_differences[i] - signed'(17'hC910);
             end else if (phase_differences[i] < signed'(-16'h6488)) begin
                 phase_differences[i] = phase_differences[i] + signed'(17'hC910);
             end
         end
+
+        /* Then we can scale the location vectors:
+            Central: (0, 0)
+            1: (0, 1)
+            2: (-1, -1)
+            3: (1, -1)
+        **/
+
+        // MIC-1
+        scaled_locations[0][0] = 0;
+        scaled_locations[0][1] = phase_differences[0];
+
+        // MIC-2
+        scaled_locations[1][0] = -phase_differences[1];
+        scaled_locations[1][1] = -phase_differences[1];
+
+        // MIC-3
+        scaled_locations[2][0] = phase_differences[2];
+        scaled_locations[2][1] = -phase_differences[2];
+
+        // Finally we can sum all the vectors
+        summed_locations[0] = 0;
+        summed_locations[1] = 0;
+
+        for (integer i = 0; i < 3; i = i + 1) begin
+            summed_locations[0] = summed_locations[0] + scaled_locations[i][0];
+            summed_locations[1] = summed_locations[1] + scaled_locations[i][1];
+        end
     end
 
-    assign vector = 0;
+    assign vector = {summed_locations[0] >> 2, summed_locations[1] >> 2};
 endmodule
-
-
-// logic [31:0] mic_central, mic_1, mic_2, mic_3;
-
-    // logic signed [18:0] x_sum;
-    // logic signed [18:0] y_sum;
-
-    // assign mic_central = data_in[127:96];
-    // assign mic_1 = data_in[95:64];
-    // assign mic_2 = data_in[63:32];
-    // assign mic_3 = data_in[31:0];
-
-    // assign x_sum = -(signed'(mic_2[31:16]) - signed'(mic_central[31:16])) + (signed'(mic_3[31:16]) - signed'(mic_central[31:16]));
-    // assign y_sum = (signed'(mic_1[31:16]) - signed'(mic_central[31:16])) - (signed'(mic_2[31:16]) - signed'(mic_central[31:16])) - (signed'(mic_3[31:16]) - signed'(mic_central[31:16]));
-
-    // assign vector = {x_sum >> 3, y_sum >> 3};
-
