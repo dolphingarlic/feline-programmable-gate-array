@@ -27,8 +27,8 @@ module translate #(
     input wire valid_in,
     output wire ready_out,
 
-    output wire [(CHANNELS * DATA_WIDTH) - 1:0] data_out,
-    output wire valid_out
+    output logic [DATA_WIDTH - 1: 0] data_out [CHANNELS - 1:0],
+    output logic valid_out
 );
 
     logic [CHANNELS - 1:0] cordic_valids; // Store channels worth of valids
@@ -43,7 +43,7 @@ module translate #(
                 .s_axis_cartesian_tdata(data_in[(DATA_WIDTH * i) +: DATA_WIDTH]),
                 .s_axis_cartesian_tvalid(valid_in),
                 .s_axis_cartesian_tready(cordic_readys[i]),
-                .m_axis_dout_tdata(data_out[(DATA_WIDTH * i) +: DATA_WIDTH]),
+                .m_axis_dout_tdata(data_out[i]),
                 .m_axis_dout_tvalid(cordic_valids[i])
             );
         end

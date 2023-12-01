@@ -63,6 +63,11 @@ microphones_no_ip:
 	vvp sim/microphones_no_ip.out
 	gtkwave microphones_no_ip.vcd
 
+.PHONY: direction_calculator
+direction_calculator:
+	iverilog -g2012 -o sim/direction_calculator.out sim/direction_calculator_tb.sv hdl/localization/direction_calculator.sv
+	vvp sim/direction_calculator.out
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
