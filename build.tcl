@@ -23,6 +23,7 @@ read_verilog -sv [ glob ./hdl/biometrics/feature_extractor/*.sv ]
 read_verilog -sv [ glob ./hdl/common/*.sv ]
 read_verilog -sv [ glob ./hdl/sound/*.sv ]
 read_verilog [ glob ./hdl/sound/*.v ]
+read_verilog [ glob ./hdl/common/*.v ]
 # uncomment line below if verilog (.v) files present:
 # read_verilog  [ glob ./hdl/*.v ]
 read_xdc ./xdc/top_level.xdc

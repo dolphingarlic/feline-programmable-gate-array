@@ -99,6 +99,7 @@ module top_level (
     .clk_in(clk_m),
     .rst_in(sys_rst),
     .write_enable_in(btn[1]),
+    .predict_enable_in(btn[2]),
 
     .fft_data_in(fft_data),
     .fft_valid_in(fft_valid),
