@@ -5,11 +5,11 @@ read_verilog -sv [ glob ./hdl/*/*.sv ]
 #read_mem [ glob ./data/*.mem ]
 read_verilog -sv [ glob ./sim/*.sv ]
 
-# read_ip ./ip/cordic_0/cordic_0.xci
+read_ip ./ip/cordic_0/cordic_0.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 
-set_property top direction_calculator_tb [get_fileset sim_1]
+set_property top direction_aggregator_tb [get_fileset sim_1]
 launch_simulation
 restart
 # open_vcd translate.vcd

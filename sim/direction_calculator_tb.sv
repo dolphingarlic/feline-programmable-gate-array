@@ -34,17 +34,14 @@ module direction_calculator_tb;
 
     #10;
 
-    central_mic = 32'h00_00_00_00;
+    central_mic = 32'h00_00_40_00;
     peripheral_mics = {32'h10_00_00_00, 32'hf0_00_00_00, 32'hf0_00_00_00};
     mic_locations = {{16'h00_00, 16'h20_00}, {16'he0_00, 16'he0_00}, {16'h20_00, 16'he0_00}};
 
     #10;
 
     $display("x_out is %b, y_out is %b", vector[31:16], vector[15:0]);
-    // Print all values from phase differences
-    // for (integer i = 0; i < 3; i = i + 1) begin
-    //   $display("scaled_location_x is %b, scaled_location_y is %b", scaled_locations[i][0], scaled_locations[i][1]);
-    // end
+    $display("scaled_location_x is %b, scaled_location_y is %b", summed_locations[0], summed_locations[1]);
 
     $display("Finishing Sim");
     $finish;
