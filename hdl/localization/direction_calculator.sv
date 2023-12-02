@@ -16,16 +16,16 @@
 
 module direction_calculator(
     // CENTRAL MICROPHONE
-    input logic [31:0] central_mic,
+    input wire [31:0] central_mic,
     // PERIPHERAL MICROPHONES
-    input logic [31:0] peripheral_mics [3],
+    input wire [31:0] peripheral_mics [3],
     // OUTPUT (x,y each 16 bits 7.9 fixed point)
-    output logic signed [31:0] vector,
+    output logic signed [31:0] vector
 );
     logic signed [16:0] phase_differences [2:0]; // Each is 17 bits 4.13 fixed point
     // NOTE: Since we constraint phase_differences to be -pi to pi we know it actually only takes up 16 bits 
     logic signed [15:0] scaled_locations [2:0][1:0]; // Each loc has x,y. Both are 3.13. First is x, Second is y
-    logic signed [17:0] summed_locations [2] // x, y both are 18 bits 5.13 fixed point
+    logic signed [17:0] summed_locations [2]; // x, y both are 18 bits 5.13 fixed point
    
     always_comb begin
 

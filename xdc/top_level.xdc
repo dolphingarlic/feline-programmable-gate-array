@@ -121,9 +121,9 @@ set_property PACKAGE_PIN B13 [ get_ports "spkl"]
 set_property PACKAGE_PIN B14 [ get_ports "spkr"]
 set_property IOSTANDARD LVCMOS33 [ get_ports "spk*"]
 
-set_property PACKAGE_PIN E12 [ get_ports "mic_clk"]
-set_property PACKAGE_PIN D12 [ get_ports "mic_data"]
-set_property IOSTANDARD LVCMOS33 [ get_ports "mic*"]
+# set_property PACKAGE_PIN E12 [ get_ports "mic_clk"]
+# set_property PACKAGE_PIN D12 [ get_ports "mic_data"]
+# set_property IOSTANDARD LVCMOS33 [ get_ports "mic*"]
 
 # BLE UART signals
 set_property -dict {PACKAGE_PIN G15 IOSTANDARD LVCMOS33} [get_ports {ble_uart_rx}]
@@ -156,3 +156,6 @@ set_property -dict {PACKAGE_PIN J16 IOSTANDARD LVCMOS33}  [ get_ports "pmodb[7]"
 set_property PACKAGE_PIN B16 [ get_ports "uart_rxd"]
 set_property PACKAGE_PIN A16 [ get_ports "uart_txd"]
 set_property IOSTANDARD LVCMOS33 [ get_ports "uart*"]
+
+# Pins for controlling the servo
+set_property PACKAGE_PIN L18 [ get_ports "servo_0"]

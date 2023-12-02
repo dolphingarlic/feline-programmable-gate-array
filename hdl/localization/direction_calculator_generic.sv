@@ -19,10 +19,10 @@ module direction_calculator_generic #(
     parameter DATA_WIDTH = 32
 ) (
     // CENTRAL MICROPHONE
-    input logic [DATA_WIDTH - 1: 0] central_mic,
+    input wire [DATA_WIDTH - 1: 0] central_mic,
     // PERIPHERAL MICROPHONES
-    input logic [DATA_WIDTH - 1: 0] peripheral_mics [PERIPHERAL_MICS-1:0],
-    input logic [(DATA_WIDTH / 2) - 1: 0] mic_locations [PERIPHERAL_MICS-1:0][2],
+    input wire [DATA_WIDTH - 1: 0] peripheral_mics [PERIPHERAL_MICS-1:0],
+    input wire [(DATA_WIDTH / 2) - 1: 0] mic_locations [PERIPHERAL_MICS-1:0][2],
     // OUTPUT
     output logic signed [DATA_WIDTH - 1:0] vector,
     output logic signed [(DATA_WIDTH / 2) + PERIPHERAL_MICS - 1:0] summed_locations [2]

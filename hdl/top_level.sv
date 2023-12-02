@@ -35,7 +35,7 @@ module top_level (
 
   // Capture audio from the microphones
 
-  logic signed [15:0] mic_audio_data;
+  logic signed [15:0] mic_audio_data [3:0];
   logic ws;
   logic sck;
 
@@ -49,10 +49,10 @@ module top_level (
     .clk_in(clk_m),
     .rst_in(sys_rst),
 
-    .mic_data(pmodb[0]),
+    .mic_data(pmodb[3:0]),
     .mic_sck(sck),
     .mic_ws(ws),
-    .audio_data(mic_audio_data)
+    .audio_data(mic_audio_data),
     .audio_valid(audio_sample_valid),
     .audio_ready(audio_sample_ready)
   );
@@ -69,11 +69,24 @@ module top_level (
 
   // Playback audio to headphones
 
+  logic [15:0] playback_audio;
+
+  always_comb begin
+    if (sw[0])
+      playback_audio = mic_audio_data[0];
+    else if (sw[1])
+      playback_audio = mic_audio_data[1];
+    else if (sw[2])
+      playback_audio = mic_audio_data[2];
+    else if (sw[3])
+      playback_audio = mic_audio_data[3];
+  end
+
   logic audio_out;
   pdm my_pdm(
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .level_in(mic_audio_data),
+    .level_in(playback_audio),
     .pdm_out(audio_out)
   );
 
@@ -82,35 +95,48 @@ module top_level (
 
   // Calculate FFT of the audio data
 
-  logic [8:0] audio_counter;
+  // logic [8:0] audio_counter;
 
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) audio_counter <= 0;
-    else if (audio_sample_valid) audio_counter <= audio_counter + 1;
-  end
+  // always_ff @(posedge clk_m) begin
+  //   if (sys_rst) audio_counter <= 0;
+  //   else if (audio_sample_valid) audio_counter <= audio_counter + 1;
+  // end
 
-  logic [127:0] fft_data;
-  logic fft_valid, fft_last, fft_ready;
+  // logic [127:0] fft_data;
+  // logic fft_valid, fft_last, fft_ready;
 
-  xfft_0 xfft_0_inst (
-    .aclk(clk_m),
-    // TODO: Use multiple microphones
-    .s_axis_data_tdata({mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0}), // We only have real-data
-    .s_axis_data_tvalid(audio_sample_valid),
-    .s_axis_data_tlast(audio_counter == 511),
-    .s_axis_data_tready(audio_sample_ready),
-    .s_axis_config_tdata(16'b0),
-    .s_axis_config_tvalid(1'b0),
-    .s_axis_config_tready(1'b1),
-    .m_axis_data_tdata(fft_data),
-    .m_axis_data_tvalid(fft_valid),
-    .m_axis_data_tlast(fft_last),
-    .m_axis_data_tready(fft_ready)
-  );
+  // xfft_0 xfft_0_inst (
+  //   .aclk(clk_m),
+  //   // TODO: Use multiple microphones
+  //   .s_axis_data_tdata({mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0}), // We only have real-data
+  //   .s_axis_data_tvalid(audio_sample_valid),
+  //   .s_axis_data_tlast(audio_counter == 511),
+  //   .s_axis_data_tready(audio_sample_ready),
+  //   .s_axis_config_tdata(16'b0),
+  //   .s_axis_config_tvalid(1'b0),
+  //   .s_axis_config_tready(1'b1),
+  //   .m_axis_data_tdata(fft_data),
+  //   .m_axis_data_tvalid(fft_valid),
+  //   .m_axis_data_tlast(fft_last),
+  //   .m_axis_data_tready(fft_ready)
+  // );
 
-  // We need to make sure both the sound localizater and the biometrics module co-operate when getting data from the fft
+  // // We can put this into the localizer
 
-  
+  // logic angle_valid_out;
+  // logic [15:0] angle;
+
+  // localizer localizer_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+
+  //   .fft_data_in(fft_data),
+  //   .fft_valid_in(fft_valid),
+
+  //   .localizer_ready_out(fft_ready),
+  //   .angle_valid_out(angle_valid_out),
+  //   .angle(angle)
+  // );
 
   // END LAB 7 STUFF
 

@@ -11,13 +11,13 @@ module microphones(
     input wire rst_in,
 
     // Microphone signals
-    input wire mic_data,
+    input wire mic_data [3:0], // We have 4 microphones
     output logic mic_sck,
     output logic mic_ws,
 
-    output logic signed [15:0] audio_data,
-    output logic audio_valid,
-    input logic audio_ready
+    input wire audio_ready,
+    output logic signed [15:0] audio_data [3:0], // we have 4 microphones
+    output logic audio_valid
 );
     
     // I2S needs a main controller to generate the sck and ws signals
@@ -39,7 +39,7 @@ module microphones(
     logic i2s_receiver_tready;
     logic i2s_receiver_tvalid;
 
-    logic [31:0] i2s_receiver_tdata;
+    logic [31:0] i2s_receiver_tdata [3:0];
     logic i2s_receiver_tlast;
 
     i2s_receiver i2s_receiver_inst (
@@ -57,31 +57,42 @@ module microphones(
 
     // We only output on the left channel (this efficiently halves the sample rate to 32 kHz)
 
-    logic signed [23:0] signed_i2s_data;
+    logic signed [23:0] signed_i2s_data [3:0];
 
     always_ff @(posedge clk_in) begin
         if (i2s_receiver_tvalid && !i2s_receiver_tlast) begin
-            signed_i2s_data <= signed'(i2s_receiver_tdata[31:8]);
+            for (integer i = 0; i < 4; i = i + 1) begin
+                signed_i2s_data[i] <= signed'(i2s_receiver_tdata[i][31:8]);
+            end
         end
     end
 
     // Then we pass the data to an FIR filter (coefficents generated with matlab fdatool function)
 
-    logic signed [15:0] fir_data;
-    logic fir_tvalid;
+    logic signed [15:0] filtered_data [3:0];
+    logic [3:0] fir_tvalids;
+    logic [3:0] fir_readys_out;
 
-    fir_compiler_1 fir_inst (
-        .aclk(clk_in),
-        .s_axis_data_tvalid(i2s_receiver_tvalid),
-        .s_axis_data_tready(i2s_receiver_tready),
-        .s_axis_data_tdata(signed_i2s_data), // microphones only output 24 bits of data
-        .m_axis_data_tvalid(fir_tvalid),
-        .m_axis_data_tdata(fir_data),
-        .m_axis_data_tready(audio_ready)
-    );
+    genvar i;
 
-    assign audio_data = fir_data << 6; // We apply gain to the audio since top bits aren't useful
-    assign audio_valid = fir_tvalid;
+    generate
+        for (i = 0; i < CHANNELS; i = i + 1) begin: loop
+             fir_compiler_1 fir_inst (
+                .aclk(clk_in),
+                .s_axis_data_tvalid(i2s_receiver_tvalid),
+                .s_axis_data_tready(fir_readys_out[i]),
+                .s_axis_data_tdata(signed_i2s_data[i]), // microphones only output 24 bits of data
+                .m_axis_data_tvalid(fir_tvalids[i]),
+                .m_axis_data_tdata(filtered_data[i]),
+                .m_axis_data_tready(audio_ready)
+            );
+        end
+    endgenerate   
+
+    assign i2s_receiver_tready = &fir_readys_out;
+
+    assign audio_data = {filtered_data[3] << 6, filtered_data[2] << 6, filtered_data[1] << 6, filtered_data[0] << 6};
+    assign audio_valid = &fir_tvalids;
 endmodule
 
 `default_nettype wire

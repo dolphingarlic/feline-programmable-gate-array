@@ -4,7 +4,7 @@
     "xci_name": "xfft_0",
     "component_reference": "xilinx.com:ip:xfft:9.1",
     "ip_revision": "9",
-    "gen_directory": "./ip/xfft_0",
+    "gen_directory": "ip/xfft_0",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "xfft_0", "resolve_type": "user", "usage": "all" } ],
@@ -87,7 +87,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "9" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "./ip/xfft_0" } ],
+        "OUTPUTDIR": [ { "value": "ip/xfft_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2023.1" } ],
