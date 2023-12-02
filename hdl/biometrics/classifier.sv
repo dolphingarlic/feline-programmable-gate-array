@@ -42,7 +42,7 @@ module classifier #(
 
   pipeline #(
     .WIDTH(1),
-    .DEPTH(3)
+    .DEPTH(5)
   ) support_read_pipeline (
     .clk_in(clk_in),
     .rst_in(rst_in),
@@ -143,24 +143,35 @@ module classifier #(
 
   logic [$clog2(NUM_FEATURES_IN)-1:0] feature_idx;
   logic signed [15:0] feature_buffer [NUM_FEATURES_IN-1:0];
-  logic signed [31:0] product_buffer [NUM_FEATURES_IN-1:1];
+  logic signed [31:0] product_buffer [NUM_FEATURES_IN-1:0];
+  logic signed [31:0] dot_product_mid [3:0];
   logic signed [31:0] dot_product_curr, dot_product_sum;
 
   generate
     genvar j;
     for (j = 1; j < NUM_FEATURES_IN; j = j + 1) begin
       always_ff @(posedge clk_in) begin
+        // Pipeline stage 1
         product_buffer[j] <= feature_buffer[j] * support_read_data[j];
       end
     end
-  endgenerate
+    assign product_buffer[0] = 0;
 
-  always_comb begin
-    dot_product_curr = 0;
-    for (integer k = 1; k < NUM_FEATURES_IN; k = k + 1) begin
-      dot_product_curr = dot_product_curr + product_buffer[k];
+    always_ff @(posedge clk_in) begin
+      // Pipeline stage 2
+      dot_product_mid[0] <= product_buffer[0] + product_buffer[1] +
+                            product_buffer[2] + product_buffer[3];
+      dot_product_mid[1] <= product_buffer[4] + product_buffer[5] +
+                            product_buffer[6] + product_buffer[7];
+      dot_product_mid[2] <= product_buffer[8] + product_buffer[9] +
+                            product_buffer[10] + product_buffer[11];
+      dot_product_mid[3] <= product_buffer[12] + product_buffer[13] +
+                            product_buffer[14] + product_buffer[15];
+      // Pipeline stage 3
+      dot_product_curr <= dot_product_mid[0] + dot_product_mid[1] +
+                          dot_product_mid[2] + dot_product_mid[3];
     end
-  end
+  endgenerate
 
   always_ff @(posedge clk_in) begin
     if (rst_in) begin
