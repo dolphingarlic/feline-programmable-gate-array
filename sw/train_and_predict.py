@@ -117,8 +117,32 @@ async def uart_terminal():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(uart_terminal())
-    except asyncio.CancelledError:
-        # task is cancelled on disconnect, so we ignore this error
-        pass
+    # try:
+    #     asyncio.run(uart_terminal())
+    # except asyncio.CancelledError:
+    #     # task is cancelled on disconnect, so we ignore this error
+    #     pass
+    data = np.genfromtxt('sw/data/features.csv', delimiter=',')
+    svm_model = OneClassSVM(kernel='linear', nu=0.1).fit(data)
+
+    print('NUMBER OF SUPPORT VECTORS:')
+    print(svm_model.n_support_[0])
+    print()
+
+    # print('WEIGHTS OF SUPPORT VECTORS:')
+    # print(svm_model.dual_coef_[0])
+    # print()
+    
+    # print('SUPPORT VECTORS:')
+    # print(svm_model.support_vectors_)
+    # print()
+
+    print('SCALED AND ROUNDED SUPPORT VECTORS:')
+    duals = svm_model.dual_coef_[0]
+    supports = svm_model.support_vectors_
+    scaled = (supports.T * duals).T
+    print(np.round(scaled))
+    print()
+
+    print('BIAS:')
+    print(round(svm_model.intercept_[0]))
