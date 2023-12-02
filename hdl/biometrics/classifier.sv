@@ -37,7 +37,7 @@ module classifier #(
 
   // Control signals for reading from BRAM
   logic [7:0] support_read_idx;
-  logic support_read_valid, products_valid_buffer;
+  logic support_read_valid, products_valid_buffer, products_valid_buffer_prev;
   logic signed [15:0] support_read_data [NUM_FEATURES_IN-1:1];
 
   pipeline #(
@@ -49,6 +49,8 @@ module classifier #(
     .val_in(support_read_valid),
     .val_out(products_valid_buffer)
   );
+
+  always_ff @(posedge clk_in) products_valid_buffer_prev <= products_valid_buffer;
 
   generate
     genvar i;
@@ -198,7 +200,7 @@ module classifier #(
       end else if (read_state == COMPUTE) begin
         if (products_valid_buffer) begin
           dot_product_sum <= dot_product_sum + dot_product_curr;
-        end else if (support_read_idx == num_supports - 1) begin
+        end else if (products_valid_buffer_prev && !products_valid_buffer) begin
           read_state <= OUTPUT;
         end
         // Stop reading after reading all support vectors
