@@ -17,7 +17,9 @@ module direction_aggregator #(
 
     output logic [(DATA_WIDTH / 2) - 1:0] angle,
     output logic angle_valid_out,
-    output logic aggregator_ready
+    output logic aggregator_ready,
+
+    input wire m_axis_tready
 );
 
     // If we add QUANTIY DATA_WIDTH-bit numbers the maximum size is:
@@ -36,6 +38,10 @@ module direction_aggregator #(
             aggregate_direction_x <= aggregate_direction_x + direction[15:0];
             aggregate_direction_y <= aggregate_direction_y + direction[31:16];
             counter <= counter + 1;
+        end else if (m_axis_tready && angle_valid_out) begin
+            counter <= 0;
+            aggregate_direction_x <= 0;
+            aggregate_direction_y <= 0;
         end
     end
 
@@ -67,6 +73,9 @@ module direction_aggregator #(
         end else if (cordic_valid) begin
             angle <= angle_phase_data[31:16];
             angle_valid_out <= 1;
+        end else if (m_axis_tready) begin
+            angle_valid_out <= 0;
+            angle <= 0;
         end
     end
 

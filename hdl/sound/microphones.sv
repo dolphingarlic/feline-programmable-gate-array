@@ -6,7 +6,7 @@
  * @details This module reads from the 4 microphones, applies a low-pass filter, decimates, and adjusts the gain
 */
 
-module microphones(
+module microphones (
     input wire clk_in, // Takes the 98.304MHz clock
     input wire rst_in,
 

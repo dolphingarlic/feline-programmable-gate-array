@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns/1ps
 /*
-This module was generated with Manta v0.0.5 on 28 Nov 2023 at 12:03:10 by richard
+This module was generated with Manta v0.0.5 on 03 Dec 2023 at 15:28:27 by richard
 
 If this breaks or if you've got spicy formal verification memes, contact fischerm [at] mit.edu
 
@@ -16,9 +16,11 @@ manta manta_inst (
     .rx(rx),
     .tx(tx),
     
-    .audio_data(audio_data), 
-    .ws(ws), 
-    .sck(sck));
+    .translate_valid(translate_valid), 
+    .polar_0(polar_0), 
+    .polar_1(polar_1), 
+    .polar_2(polar_2), 
+    .polar_3(polar_3));
 
 */
 
@@ -28,9 +30,11 @@ module manta (
     input wire rx,
     output reg tx,
     
-    input wire [15:0] audio_data,
-    input wire ws,
-    input wire sck);
+    input wire translate_valid,
+    input wire [31:0] polar_0,
+    input wire [31:0] polar_1,
+    input wire [31:0] polar_2,
+    input wire [31:0] polar_3);
 
 
     uart_rx #(.CLOCKS_PER_BAUD(868)) urx (
@@ -67,9 +71,11 @@ module manta (
         .rw_i(brx_my_logic_analyzer_rw),
         .valid_i(brx_my_logic_analyzer_valid),
     
-        .audio_data(audio_data),
-        .ws(ws),
-        .sck(sck),
+        .translate_valid(translate_valid),
+        .polar_0(polar_0),
+        .polar_1(polar_1),
+        .polar_2(polar_2),
+        .polar_3(polar_3),
     
         .addr_o(),
         .data_o(my_logic_analyzer_btx_data),
@@ -314,9 +320,11 @@ module logic_analyzer (
     input wire clk,
 
     // probes
-    input wire [15:0] audio_data,
-    input wire ws,
-    input wire sck,
+    input wire translate_valid,
+    input wire [31:0] polar_0,
+    input wire [31:0] polar_1,
+    input wire [31:0] polar_2,
+    input wire [31:0] polar_3,
 
     // input port
     input wire [15:0] addr_i,
@@ -330,7 +338,7 @@ module logic_analyzer (
     output reg rw_o,
     output reg valid_o
     );
-    localparam SAMPLE_DEPTH = 512;
+    localparam SAMPLE_DEPTH = 4096;
     localparam ADDR_WIDTH = $clog2(SAMPLE_DEPTH);
 
     reg [3:0] state;
@@ -346,9 +354,9 @@ module logic_analyzer (
     reg [ADDR_WIDTH-1:0] bram_addr;
     reg bram_we;
 
-    localparam TOTAL_PROBE_WIDTH = 18;
+    localparam TOTAL_PROBE_WIDTH = 129;
     reg [TOTAL_PROBE_WIDTH-1:0] probes_concat;
-    assign probes_concat = {sck, ws, audio_data};
+    assign probes_concat = {polar_3, polar_2, polar_1, polar_0, translate_valid};
 
     logic_analyzer_controller #(.SAMPLE_DEPTH(SAMPLE_DEPTH)) la_controller (
         .clk(clk),
@@ -403,9 +411,11 @@ module logic_analyzer (
     trigger_block #(.BASE_ADDR(7)) trig_blk (
         .clk(clk),
 
-        .audio_data(audio_data),
-        .ws(ws),
-        .sck(sck),
+        .translate_valid(translate_valid),
+        .polar_0(polar_0),
+        .polar_1(polar_1),
+        .polar_2(polar_2),
+        .polar_3(polar_3),
 
         .trig(trig),
 
@@ -426,7 +436,7 @@ module logic_analyzer (
 
     // sample memory
     block_memory #(
-        .BASE_ADDR(13),
+        .BASE_ADDR(17),
         .WIDTH(TOTAL_PROBE_WIDTH),
         .DEPTH(SAMPLE_DEPTH)
         ) block_mem (
@@ -782,9 +792,11 @@ module trigger_block (
     input wire clk,
 
     // probes
-    input wire [15:0] audio_data,
-    input wire ws,
-    input wire sck,
+    input wire translate_valid,
+    input wire [31:0] polar_0,
+    input wire [31:0] polar_1,
+    input wire [31:0] polar_2,
+    input wire [31:0] polar_3,
 
     // trigger
     output reg trig,
@@ -802,47 +814,69 @@ module trigger_block (
     output reg valid_o);
 
     parameter BASE_ADDR = 0;
-    localparam MAX_ADDR = 13;
+    localparam MAX_ADDR = 17;
 
     // trigger configuration registers
     // - each probe gets an operation and a compare register
     // - at the end we OR them all together. along with any custom probes the user specs
 
-    reg [3:0] audio_data_op = 0;
-    reg [15:0] audio_data_arg = 0;
-    reg audio_data_trig;
+    reg [3:0] translate_valid_op = 0;
+    reg translate_valid_arg = 0;
+    reg translate_valid_trig;
     
-    trigger #(.INPUT_WIDTH(16)) audio_data_trigger (
+    trigger #(.INPUT_WIDTH(1)) translate_valid_trigger (
         .clk(clk),
     
-        .probe(audio_data),
-        .op(audio_data_op),
-        .arg(audio_data_arg),
-        .trig(audio_data_trig));
-    reg [3:0] ws_op = 0;
-    reg ws_arg = 0;
-    reg ws_trig;
+        .probe(translate_valid),
+        .op(translate_valid_op),
+        .arg(translate_valid_arg),
+        .trig(translate_valid_trig));
+    reg [3:0] polar_0_op = 0;
+    reg [31:0] polar_0_arg = 0;
+    reg polar_0_trig;
     
-    trigger #(.INPUT_WIDTH(1)) ws_trigger (
+    trigger #(.INPUT_WIDTH(32)) polar_0_trigger (
         .clk(clk),
     
-        .probe(ws),
-        .op(ws_op),
-        .arg(ws_arg),
-        .trig(ws_trig));
-    reg [3:0] sck_op = 0;
-    reg sck_arg = 0;
-    reg sck_trig;
+        .probe(polar_0),
+        .op(polar_0_op),
+        .arg(polar_0_arg),
+        .trig(polar_0_trig));
+    reg [3:0] polar_1_op = 0;
+    reg [31:0] polar_1_arg = 0;
+    reg polar_1_trig;
     
-    trigger #(.INPUT_WIDTH(1)) sck_trigger (
+    trigger #(.INPUT_WIDTH(32)) polar_1_trigger (
         .clk(clk),
     
-        .probe(sck),
-        .op(sck_op),
-        .arg(sck_arg),
-        .trig(sck_trig));
+        .probe(polar_1),
+        .op(polar_1_op),
+        .arg(polar_1_arg),
+        .trig(polar_1_trig));
+    reg [3:0] polar_2_op = 0;
+    reg [31:0] polar_2_arg = 0;
+    reg polar_2_trig;
+    
+    trigger #(.INPUT_WIDTH(32)) polar_2_trigger (
+        .clk(clk),
+    
+        .probe(polar_2),
+        .op(polar_2_op),
+        .arg(polar_2_arg),
+        .trig(polar_2_trig));
+    reg [3:0] polar_3_op = 0;
+    reg [31:0] polar_3_arg = 0;
+    reg polar_3_trig;
+    
+    trigger #(.INPUT_WIDTH(32)) polar_3_trigger (
+        .clk(clk),
+    
+        .probe(polar_3),
+        .op(polar_3_op),
+        .arg(polar_3_arg),
+        .trig(polar_3_trig));
 
-   assign trig = audio_data_trig || ws_trig || sck_trig;
+   assign trig = translate_valid_trig || polar_0_trig || polar_1_trig || polar_2_trig || polar_3_trig;
 
     // perform register operations
     always @(posedge clk) begin
@@ -856,24 +890,32 @@ module trigger_block (
             // reads
             if(valid_i && !rw_i) begin
                 case (addr_i)
-                    BASE_ADDR + 0: data_o <= audio_data_op;
-                    BASE_ADDR + 1: data_o <= audio_data_arg;
-                    BASE_ADDR + 2: data_o <= ws_op;
-                    BASE_ADDR + 3: data_o <= ws_arg;
-                    BASE_ADDR + 4: data_o <= sck_op;
-                    BASE_ADDR + 5: data_o <= sck_arg;
+                    BASE_ADDR + 0: data_o <= translate_valid_op;
+                    BASE_ADDR + 1: data_o <= translate_valid_arg;
+                    BASE_ADDR + 2: data_o <= polar_0_op;
+                    BASE_ADDR + 3: data_o <= polar_0_arg;
+                    BASE_ADDR + 4: data_o <= polar_1_op;
+                    BASE_ADDR + 5: data_o <= polar_1_arg;
+                    BASE_ADDR + 6: data_o <= polar_2_op;
+                    BASE_ADDR + 7: data_o <= polar_2_arg;
+                    BASE_ADDR + 8: data_o <= polar_3_op;
+                    BASE_ADDR + 9: data_o <= polar_3_arg;
                 endcase
             end
 
             // writes
             else if(valid_i && rw_i) begin
                 case (addr_i)
-                    BASE_ADDR + 0: audio_data_op <= data_i;
-                    BASE_ADDR + 1: audio_data_arg <= data_i;
-                    BASE_ADDR + 2: ws_op <= data_i;
-                    BASE_ADDR + 3: ws_arg <= data_i;
-                    BASE_ADDR + 4: sck_op <= data_i;
-                    BASE_ADDR + 5: sck_arg <= data_i;
+                    BASE_ADDR + 0: translate_valid_op <= data_i;
+                    BASE_ADDR + 1: translate_valid_arg <= data_i;
+                    BASE_ADDR + 2: polar_0_op <= data_i;
+                    BASE_ADDR + 3: polar_0_arg <= data_i;
+                    BASE_ADDR + 4: polar_1_op <= data_i;
+                    BASE_ADDR + 5: polar_1_arg <= data_i;
+                    BASE_ADDR + 6: polar_2_op <= data_i;
+                    BASE_ADDR + 7: polar_2_arg <= data_i;
+                    BASE_ADDR + 8: polar_3_op <= data_i;
+                    BASE_ADDR + 9: polar_3_arg <= data_i;
                 endcase
             end
         end

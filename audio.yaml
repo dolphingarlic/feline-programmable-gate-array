@@ -4,23 +4,28 @@ cores:
   #   type: io
 
   #   inputs:
-  #     sck: 1
-  #     ws: 1
-  #     data: 1
-  #     audio_data: 16
+  #     # x_dir: 16
+  #     # y_dir: 16
+  #     # angle: 16
+  #     polar_0: 32
+  #     polar_1: 32
+  #     polar_2: 32
+  #     polar_3: 32
+
   my_logic_analyzer:
     type: logic_analyzer
-    sample_depth: 512
-    # trigger_loc: 256
-    # capture_mode: incremental
+    sample_depth: 4096
+    trigger_loc: 1000
 
     probes:
-      audio_data: 16
-      ws: 1
-      sck: 1
+      translate_valid: 1
+      polar_0: 32
+      polar_1: 32
+      polar_2: 32
+      polar_3: 32
 
     triggers:
-      - sck RISING
+      - translate_valid RISING
 
 uart:
   port: "/dev/cu.usbserial-88742923012B1"

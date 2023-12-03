@@ -10,7 +10,10 @@ module localizer (
 
     output logic angle_valid_out,
     output logic localizer_ready_out,
-    output logic [15:0] angle
+    output logic [15:0] angle,
+
+    input wire uart_rxd,
+    output logic uart_txd
 );
 
     //////////////////////////////////////////////
@@ -19,7 +22,7 @@ module localizer (
 
     logic [31:0] translate_data [3:0];
     logic translate_valid;
-    logic aggregator_ready;
+    logic translate_ready;
 
     translate translate_inst (
         .clk_in(clk_in),
@@ -30,6 +33,18 @@ module localizer (
         .data_out(translate_data),
         .valid_out(translate_valid)
     );
+
+    manta manta_inst (
+        .clk(clk_in),
+
+        .rx(uart_rxd),
+        .tx(uart_txd),
+        
+        .translate_valid(translate_valid),
+        .polar_0(translate_data[0]),
+        .polar_1(translate_data[1]),
+        .polar_2(translate_data[2]),
+        .polar_3(translate_data[3]));
     
     //////////////////////////////////////////////
     // Calculate the direction vector           //
@@ -56,8 +71,23 @@ module localizer (
 
         .angle(angle),
         .angle_valid_out(angle_valid_out),
-        .aggregator_ready(aggregator_ready)
+        .aggregator_ready(translate_ready),
+
+        .m_axis_tready(1'b1)
     );
+
+    // Store the angle
+
+    logic [15:0] angle_stored;
+
+    always_ff @(posedge clk_in) begin
+        if (rst_in) begin
+            angle_stored <= 0;
+        end else if (angle_valid_out) begin
+            angle_stored <= angle;
+        end
+    end
+
 
 endmodule;
 

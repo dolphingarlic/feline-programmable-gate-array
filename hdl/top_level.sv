@@ -57,16 +57,6 @@ module top_level (
     .audio_ready(audio_sample_ready)
   );
 
-  // manta manta_inst (
-  //   .clk(clk_m),
-
-  //   .rx(uart_rxd),
-  //   .tx(uart_txd),
-    
-  //   .ws(ws),
-  //   .sck(sck),
-  //   .audio_data({mic_audio_data}));
-
   // Playback audio to headphones
 
   logic [15:0] playback_audio;
@@ -95,48 +85,51 @@ module top_level (
 
   // Calculate FFT of the audio data
 
-  // logic [8:0] audio_counter;
+  logic [8:0] audio_counter;
 
-  // always_ff @(posedge clk_m) begin
-  //   if (sys_rst) audio_counter <= 0;
-  //   else if (audio_sample_valid) audio_counter <= audio_counter + 1;
-  // end
+  always_ff @(posedge clk_m) begin
+    if (sys_rst) audio_counter <= 0;
+    else if (audio_sample_valid) audio_counter <= audio_counter + 1;
+  end
 
-  // logic [127:0] fft_data;
-  // logic fft_valid, fft_last, fft_ready;
+  logic [127:0] fft_data;
+  logic fft_valid, fft_last, fft_ready;
 
-  // xfft_0 xfft_0_inst (
-  //   .aclk(clk_m),
-  //   // TODO: Use multiple microphones
-  //   .s_axis_data_tdata({mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0, mic_audio_data, 16'b0}), // We only have real-data
-  //   .s_axis_data_tvalid(audio_sample_valid),
-  //   .s_axis_data_tlast(audio_counter == 511),
-  //   .s_axis_data_tready(audio_sample_ready),
-  //   .s_axis_config_tdata(16'b0),
-  //   .s_axis_config_tvalid(1'b0),
-  //   .s_axis_config_tready(1'b1),
-  //   .m_axis_data_tdata(fft_data),
-  //   .m_axis_data_tvalid(fft_valid),
-  //   .m_axis_data_tlast(fft_last),
-  //   .m_axis_data_tready(fft_ready)
-  // );
+  xfft_0 xfft_0_inst (
+    .aclk(clk_m),
+    // TODO: Use multiple microphones
+    .s_axis_data_tdata({mic_audio_data[3], 16'b0, mic_audio_data[2], 16'b0, mic_audio_data[1], 16'b0, mic_audio_data[0], 16'b0}), // We only have real-data
+    .s_axis_data_tvalid(audio_sample_valid),
+    .s_axis_data_tlast(audio_counter == 511),
+    .s_axis_data_tready(audio_sample_ready),
+    .s_axis_config_tdata(16'b0),
+    .s_axis_config_tvalid(1'b0),
+    .s_axis_config_tready(1'b1),
+    .m_axis_data_tdata(fft_data),
+    .m_axis_data_tvalid(fft_valid),
+    .m_axis_data_tlast(fft_last),
+    .m_axis_data_tready(fft_ready)
+  );
 
   // // We can put this into the localizer
 
-  // logic angle_valid_out;
-  // logic [15:0] angle;
+  logic angle_valid_out;
+  logic [15:0] angle;
 
-  // localizer localizer_inst (
-  //   .clk_in(clk_m),
-  //   .rst_in(sys_rst),
+  localizer localizer_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
 
-  //   .fft_data_in(fft_data),
-  //   .fft_valid_in(fft_valid),
+    .fft_data_in(fft_data),
+    .fft_valid_in(fft_valid),
 
-  //   .localizer_ready_out(fft_ready),
-  //   .angle_valid_out(angle_valid_out),
-  //   .angle(angle)
-  // );
+    .localizer_ready_out(fft_ready),
+    .angle_valid_out(angle_valid_out),
+    .angle(angle),
+
+    .uart_rxd(uart_rxd),
+    .uart_txd(uart_txd)
+  );
 
   // END LAB 7 STUFF
 
