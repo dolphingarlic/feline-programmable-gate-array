@@ -19,7 +19,7 @@ module uart_tx_tb;
     .rst_in(rst_in),
     .tick_out(uart_tick)
   );
-  uart_tx #(
+  ble_uart_tx #(
     .SAMPLE_RATE(16)
   ) uut (
     .clk_in(clk_in),
