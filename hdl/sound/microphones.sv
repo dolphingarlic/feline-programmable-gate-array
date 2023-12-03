@@ -11,7 +11,7 @@ module microphones(
     input wire rst_in,
 
     // Microphone signals
-    input wire mic_data [3:0], // We have 4 microphones
+    input wire [3:0] mic_data, // We have 4 microphones
     output logic mic_sck,
     output logic mic_ws,
 
@@ -76,7 +76,7 @@ module microphones(
     genvar i;
 
     generate
-        for (i = 0; i < CHANNELS; i = i + 1) begin: loop
+        for (i = 0; i < 4; i = i + 1) begin: loop
              fir_compiler_1 fir_inst (
                 .aclk(clk_in),
                 .s_axis_data_tvalid(i2s_receiver_tvalid),

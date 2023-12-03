@@ -57,15 +57,15 @@ module top_level (
     .audio_ready(audio_sample_ready)
   );
 
-  manta manta_inst (
-    .clk(clk_m),
+  // manta manta_inst (
+  //   .clk(clk_m),
 
-    .rx(uart_rxd),
-    .tx(uart_txd),
+  //   .rx(uart_rxd),
+  //   .tx(uart_txd),
     
-    .ws(ws),
-    .sck(sck),
-    .audio_data({mic_audio_data}));
+  //   .ws(ws),
+  //   .sck(sck),
+  //   .audio_data({mic_audio_data}));
 
   // Playback audio to headphones
 
