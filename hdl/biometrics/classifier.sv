@@ -20,6 +20,7 @@ module classifier #(
   input wire ble_valid_in,
 
   input wire predict_enable_in,
+  input wire signed [15:0] loudness_threshold_in,
   output logic detected_out
 );
 
@@ -207,7 +208,7 @@ module classifier #(
         if (support_read_idx == num_supports - 1) support_read_valid <= 0;
         else support_read_idx <= support_read_idx + 1;
       end else if (read_state == OUTPUT) begin
-        detected_out <= (dot_product_sum > offset); // TODO: cutoffs based on magnitude too
+        detected_out <= (dot_product_sum > offset) && (feature_buffer[0] > loudness_threshold_in);
         read_state <= DOT_IDLE;
       end
     end
