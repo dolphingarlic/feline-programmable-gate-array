@@ -84,8 +84,8 @@ async def uart_terminal():
                 await asyncio.sleep(0.05)
         print()
         
-        print(f"Sending bias: {round(svm_model.intercept_[0])}")
-        bias_bytes = int(round(svm_model.intercept_[0])).to_bytes(4, "big", signed=True)
+        print(f"Sending bias: {round(svm_model.offset_[0])}")
+        bias_bytes = int(round(svm_model.offset_[0])).to_bytes(4, "big", signed=True)
         await client.write_gatt_char(rx_char, bias_bytes, response=False)
         print()
         await asyncio.sleep(0.5)

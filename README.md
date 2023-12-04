@@ -11,7 +11,7 @@ To achieve this goal, we use a Xilinx Spartan-7 FPGA on a RealDigital Urbana boa
 - [x] Bluetooth wireless communications
 - [x] Real-time mel-frequency cepstrum coefficient feature extraction
 - [x] Asynchronous (software-based) linear SVM training
-- [ ] Real-time linear SVM-based inference
+- [x] Real-time linear SVM-based inference
 - [ ] Real-time audio localization
 - [ ] Autonomous servomotor controls
 - [ ] Real-time image recognition
