@@ -83,7 +83,11 @@ module top_level (
   assign spkl = audio_out;
   assign spkr = audio_out;
 
-  // Calculate FFT of the audio data
+  /////////////////////////////////////
+  // Calculate FFT of the audio data //
+  /////////////////////////////////////
+
+  // Count amount of samples
 
   logic [8:0] audio_counter;
 
@@ -92,14 +96,32 @@ module top_level (
     else if (audio_sample_valid) audio_counter <= audio_counter + 1;
   end
 
+  // Pass audio data through hanning-window
+
+  logic signed [15:0] hanning_windowed_audio_data [3:0];
+  logic hanning_window_audio_valid;
+
+  hanning_window hanning_window_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+
+    .sample(audio_counter),
+    .audio_data_in(mic_audio_data),
+    .audio_valid_in(audio_sample_valid),
+    .audio_data_out(hanning_windowed_audio_data),
+    .audio_valid_out(hanning_window_audio_valid)
+  );
+
+  // Calculate FFT
+
   logic [127:0] fft_data;
   logic fft_valid, fft_last, fft_ready;
 
   xfft_0 xfft_0_inst (
     .aclk(clk_m),
     // TODO: Use multiple microphones
-    .s_axis_data_tdata({mic_audio_data[3], 16'b0, mic_audio_data[2], 16'b0, mic_audio_data[1], 16'b0, mic_audio_data[0], 16'b0}), // We only have real-data
-    .s_axis_data_tvalid(audio_sample_valid),
+    .s_axis_data_tdata({16'b0, hanning_windowed_audio_data[3], 16'b0, hanning_windowed_audio_data[2], 16'b0, hanning_windowed_audio_data[1], 16'b0, hanning_windowed_audio_data[0]}), // We only have real-data
+    .s_axis_data_tvalid(hanning_window_audio_valid),
     .s_axis_data_tlast(audio_counter == 511),
     .s_axis_data_tready(audio_sample_ready),
     .s_axis_config_tdata(16'b0),
@@ -110,6 +132,8 @@ module top_level (
     .m_axis_data_tlast(fft_last),
     .m_axis_data_tready(fft_ready)
   );
+
+  assign led[0] = audio_counter == 511;
 
   // // We can put this into the localizer
 
@@ -122,6 +146,7 @@ module top_level (
 
     .fft_data_in(fft_data),
     .fft_valid_in(fft_valid),
+    .fft_last(fft_last),
 
     .localizer_ready_out(fft_ready),
     .angle_valid_out(angle_valid_out),

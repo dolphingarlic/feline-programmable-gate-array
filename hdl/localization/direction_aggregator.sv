@@ -25,7 +25,7 @@ module direction_aggregator #(
     // If we add QUANTIY DATA_WIDTH-bit numbers the maximum size is:
     localparam AGGREGATE_WIDTH = (DATA_WIDTH / 2) + $clog2(QUANTITY);
 
-    logic [AGGREGATE_WIDTH - 1:0] aggregate_direction_x, aggregate_direction_y;
+    logic signed [AGGREGATE_WIDTH - 1:0] aggregate_direction_x, aggregate_direction_y;
 
     logic [$clog2(QUANTITY):0] counter;
     
@@ -35,8 +35,8 @@ module direction_aggregator #(
             aggregate_direction_y <= 0;
             counter <= 0;
         end else if (direction_valid_in && counter < QUANTITY) begin
-            aggregate_direction_x <= aggregate_direction_x + direction[15:0];
-            aggregate_direction_y <= aggregate_direction_y + direction[31:16];
+            aggregate_direction_x <= signed'(aggregate_direction_x) + signed'(direction[15:0]);
+            aggregate_direction_y <= signed'(aggregate_direction_y) + signed'(direction[31:16]);
             counter <= counter + 1;
         end else if (m_axis_tready && angle_valid_out) begin
             counter <= 0;
@@ -47,7 +47,7 @@ module direction_aggregator #(
 
     // We want to get the angle from the aggregate_direction
 
-    logic [(DATA_WIDTH / 2) - 1: 0] shifted_x, shifted_y;
+    logic signed [(DATA_WIDTH / 2) - 1: 0] shifted_x, shifted_y;
     
     assign shifted_y = aggregate_direction_y[(AGGREGATE_WIDTH - 1) -: (DATA_WIDTH / 2)];
     assign shifted_x = aggregate_direction_x[(AGGREGATE_WIDTH - 1) -: (DATA_WIDTH / 2)];
