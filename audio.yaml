@@ -4,7 +4,11 @@ cores:
     type: io
 
     inputs:
-      angle: 16
+      # angle: 16
+      mag_bin_0: 24
+      mag_bin_1: 24
+      mag_bin_2: 24
+      mag_bin_3: 24
 
 uart:
   port: "/dev/cu.usbserial-88742923012B1"

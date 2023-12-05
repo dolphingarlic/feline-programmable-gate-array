@@ -49,7 +49,7 @@ module localizer #(
         .data_in(fft_data_in), // MSB:Y_IN,X_IN:0 https://docs.xilinx.com/v/u/en-US/pg105-cordic pg 16
         .valid_in(fft_valid_in && (fft_counter > LOWER_FFT_BOUND && fft_counter < UPPER_FFT_BOUND)),
 
-        .ready_out(localizer_ready_out),
+        .ready_out(translate_ready),
         .data_out(translate_data),
         .valid_out(translate_valid)
     );
@@ -58,7 +58,7 @@ module localizer #(
     // Calculate the direction vector           //
     //////////////////////////////////////////////
 
-    logic [31:0] direction_vector;
+    logic [37:0] direction_vector;
 
     direction_calculator direction_calculator_inst (
         .central_mic(translate_data[0]),
@@ -70,6 +70,9 @@ module localizer #(
     // Sum direction vectors to get angle        //
     ///////////////////////////////////////////////
 
+    logic signed [23:0] [3:0] mag_bins;
+    logic aggregator_ready;
+
     direction_aggregator #(
         .QUANTITY(UPPER_FFT_BOUND - LOWER_FFT_BOUND - 1)
     ) direction_aggregator_inst (
@@ -78,34 +81,45 @@ module localizer #(
 
         .direction_valid_in(translate_valid),
         .direction(direction_vector),
+        .magnitude(translate_data[0][31:16]),
 
-        .angle(angle),
+        // .angle(angle),
+        .mag_bins(mag_bins),
         .angle_valid_out(angle_valid_out),
-        .aggregator_ready(translate_ready),
+        .aggregator_ready(aggregator_ready),
 
         .m_axis_tready(1'b1)
     );
 
+    assign localizer_ready_out = aggregator_ready && translate_ready;
+
     // Store the angle
 
-    logic [15:0] angle_stored;
+    logic signed [23:0] [3:0] mag_bins_stored;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin
-            angle_stored <= 0;
+            for (integer i = 0; i < 4; i = i + 1) begin
+                mag_bins_stored[i] <= 0;
+            end
         end else if (angle_valid_out) begin
-            angle_stored <= angle;
+            for (integer i = 0; i < 4; i = i + 1) begin
+                mag_bins_stored[i] <= mag_bins[i];
+            end
         end
     end
 
-     manta manta_inst (
+    manta manta_inst (
         .clk(clk_in),
 
         .rx(uart_rxd),
         .tx(uart_txd),
         
-        .angle(angle_stored));
-
+        .mag_bin_0(mag_bins_stored[0]),
+        .mag_bin_1(mag_bins_stored[1]),
+        .mag_bin_2(mag_bins_stored[2]),
+        .mag_bin_3(mag_bins_stored[3])
+    );
 
 endmodule;
 

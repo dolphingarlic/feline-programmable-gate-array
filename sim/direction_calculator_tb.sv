@@ -36,7 +36,6 @@ module direction_calculator_tb;
 
     central_mic = 32'h00_00_40_00;
     peripheral_mics = {32'h10_00_00_00, 32'hf0_00_00_00, 32'hf0_00_00_00};
-    mic_locations = {{16'h00_00, 16'h20_00}, {16'he0_00, 16'he0_00}, {16'h20_00, 16'he0_00}};
 
     #10;
 

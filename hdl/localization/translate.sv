@@ -27,7 +27,7 @@ module translate #(
     input wire valid_in,
     output wire ready_out,
 
-    output logic signed [DATA_WIDTH - 1: 0] data_out [CHANNELS - 1:0],
+    output logic [DATA_WIDTH - 1: 0] data_out [CHANNELS - 1:0],
     output logic valid_out
 );
 

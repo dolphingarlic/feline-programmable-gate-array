@@ -8,12 +8,9 @@ module direction_aggregator_tb;
 
   logic direction_valid_in;
   logic [31:0] direction;
-  logic [15:0] magnitude;
 
   logic [15:0] angle;
   logic angle_valid_out;
-
-  logic signed [23:0] [3:0] mag_bins;
 
   // INPUTS
 
@@ -23,14 +20,10 @@ module direction_aggregator_tb;
 
     .direction_valid_in(direction_valid_in),
     .direction(direction),
-    .magnitude(magnitude),
 
-    .mag_bins(mag_bins),
-    .angle_valid_out(angle_valid_out),
-    .aggregator_ready(aggregator_ready),
-
-    .m_axis_tready(1'b1)
-  );  
+    .angle(angle),
+    .angle_valid_out(angle_valid_out)
+  );
 
   always begin
       #5; // 100MHz clock
@@ -53,10 +46,7 @@ module direction_aggregator_tb;
     #10
 
     rst_in = 0;
-
     direction = 32'h03_00_03_00;
-    magnitude = 16'h4000;
-
     direction_valid_in = 1;
 
     #10;

@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns/1ps
 /*
-This module was generated with Manta v0.0.5 on 03 Dec 2023 at 18:25:01 by richard
+This module was generated with Manta v0.0.5 on 04 Dec 2023 at 21:44:05 by richard
 
 If this breaks or if you've got spicy formal verification memes, contact fischerm [at] mit.edu
 
@@ -16,7 +16,10 @@ manta manta_inst (
     .rx(rx),
     .tx(tx),
     
-    .angle(angle));
+    .mag_bin_0(mag_bin_0), 
+    .mag_bin_1(mag_bin_1), 
+    .mag_bin_2(mag_bin_2), 
+    .mag_bin_3(mag_bin_3));
 
 */
 
@@ -26,7 +29,10 @@ module manta (
     input wire rx,
     output reg tx,
     
-    input wire [15:0] angle);
+    input wire [23:0] mag_bin_0,
+    input wire [23:0] mag_bin_1,
+    input wire [23:0] mag_bin_2,
+    input wire [23:0] mag_bin_3);
 
 
     uart_rx #(.CLOCKS_PER_BAUD(868)) urx (
@@ -60,7 +66,10 @@ module manta (
         .user_clk(clk),
     
         // ports
-        .angle(angle),
+        .mag_bin_0(mag_bin_0),
+        .mag_bin_1(mag_bin_1),
+        .mag_bin_2(mag_bin_2),
+        .mag_bin_3(mag_bin_3),
     
         // input port
         .addr_i(brx_io_core_addr),
@@ -313,7 +322,10 @@ module io_core (
     input wire user_clk,
 
     // ports
-    input wire [15:0] angle,
+    input wire [23:0] mag_bin_0,
+    input wire [23:0] mag_bin_1,
+    input wire [23:0] mag_bin_2,
+    input wire [23:0] mag_bin_3,
 
     // input port
     input wire [15:0] addr_i,
@@ -333,7 +345,10 @@ module io_core (
     reg strobe = 0;
 
     // input probe buffers
-    reg [15:0] angle_buf = 0;
+    reg [23:0] mag_bin_0_buf = 0;
+    reg [23:0] mag_bin_1_buf = 0;
+    reg [23:0] mag_bin_2_buf = 0;
+    reg [23:0] mag_bin_3_buf = 0;
 
     // output probe buffers
     
@@ -347,7 +362,10 @@ module io_core (
     always @(posedge user_clk) begin
         if(strobe) begin
             // update input buffers from input probes
-            angle_buf <= angle;
+            mag_bin_0_buf <= mag_bin_0;
+            mag_bin_1_buf <= mag_bin_1;
+            mag_bin_2_buf <= mag_bin_2;
+            mag_bin_3_buf <= mag_bin_3;
 
             // update output buffers from output probes
             
@@ -362,14 +380,21 @@ module io_core (
         valid_o <= valid_i;
 
         // check if address is valid
-        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 1)) begin
+        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 8)) begin
 
             // reads
             if(!rw_i) begin
                 case (addr_i)
                     BASE_ADDR + 0: data_o <= strobe;
 
-                    BASE_ADDR + 1: data_o <= angle_buf;
+                    BASE_ADDR + 1: data_o <= mag_bin_0_buf[15:0];
+                    BASE_ADDR + 2: data_o <= mag_bin_0_buf[23:16];
+                    BASE_ADDR + 3: data_o <= mag_bin_1_buf[15:0];
+                    BASE_ADDR + 4: data_o <= mag_bin_1_buf[23:16];
+                    BASE_ADDR + 5: data_o <= mag_bin_2_buf[15:0];
+                    BASE_ADDR + 6: data_o <= mag_bin_2_buf[23:16];
+                    BASE_ADDR + 7: data_o <= mag_bin_3_buf[15:0];
+                    BASE_ADDR + 8: data_o <= mag_bin_3_buf[23:16];
                 endcase
             end
 

@@ -7,13 +7,11 @@ import math
 m = Manta("audio.yaml")  # create manta python instance using yaml
 
 
-def binary_to_fixed_point(binary):
+def binary_to_fixed_point(binary, n_bits=16, frac_index=3):
     result = binary
-    if result & (
-        1 << 15
-    ):  # Check the sign bit (15th bit for a 16-bit two's complement)
-        result -= 1 << 16
-    return result / (2**13)
+    if result & (1 << (n_bits - 1)):
+        result -= 1 << n_bits
+    return result / (2 ** (n_bits - frac_index))
 
 
 #  polar_0 = m.io_core.polar_0.get()
@@ -33,10 +31,56 @@ while True:
     # x_dir = m.io_core.x_dir.get() # read in the output from our divider
     # y_dir = m.io_core.y_dir.get() # read in the output from our divider
     # print((x_dir, y_dir))
-    angle = m.io_core.angle.get()  # read in the output from our divider
-    binary = bin(angle)
-    fixed_point_angle = binary_to_fixed_point(angle)
-    print(math.degrees(fixed_point_angle))
+    # angle = m.io_core.angle.get()  # read in the output from our divider
+    # binary = bin(angle)
+    # fixed_point_angle = binary_to_fixed_point(angle)
+    # print(math.degrees(fixed_point_angle))
+
+    # direction_x = m.io_core.direction_x.get()
+    # direction_y = m.io_core.direction_y.get()
+
+    # Calculate angle
+    # angle = math.atan2(direction_y, direction_x)
+
+    # print(math.degrees(angle))
+
+    mag_bin_0 = m.io_core.mag_bin_0.get()
+    mag_bin_1 = m.io_core.mag_bin_1.get()
+    mag_bin_2 = m.io_core.mag_bin_2.get()
+    mag_bin_3 = m.io_core.mag_bin_3.get()
+
+    print((mag_bin_0, mag_bin_1, mag_bin_2, mag_bin_3))
+
+    # print((bin(direction_x), bin(direction_y)))
+
+    # mic_1_phase = m.io_core.mic_1_phase.get()
+    # mic_2_phase = m.io_core.mic_2_phase.get()
+    # mic_3_phase = m.io_core.mic_3_phase.get()
+    # mic_4_phase = m.io_core.mic_4_phase.get()
+
+    # phases = [mic_1_phase, mic_2_phase, mic_3_phase, mic_4_phase]
+
+    # print("--PHASES:---")
+
+    # for phase in phases:
+    #     fixed_point_angle = binary_to_fixed_point(phase)
+    #     print(math.degrees(fixed_point_angle))
+
+    # print("-----------")
+
+    # mic_1_mag = m.io_core.mic_1_mag.get()
+    # mic_2_mag = m.io_core.mic_2_mag.get()
+    # mic_3_mag = m.io_core.mic_3_mag.get()
+    # mic_4_mag = m.io_core.mic_4_mag.get()
+
+    # mags = [mic_1_mag, mic_2_mag, mic_3_mag, mic_4_mag]
+
+    # print("--MAGNITUDES:---")
+
+    # for mag in mags:
+    #     print(binary_to_fixed_point(mag, 2))
+
+    # print("-----------")
 
     # until_last_fft = m.io_core.until_last_fft.get()
     # translate_counter = m.io_core.translate_counter.get()
