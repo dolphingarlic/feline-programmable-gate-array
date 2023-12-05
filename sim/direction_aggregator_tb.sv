@@ -11,9 +11,9 @@ module direction_aggregator_tb;
   logic [15:0] magnitude;
 
   logic [15:0] angle;
-  logic angle_valid_out;
+  logic angle_valid_out, aggregator_ready;
 
-  logic signed [23:0] [3:0] mag_bins;
+  logic signed [23:0] mag_bins [3:0];
 
   // INPUTS
 
@@ -65,7 +65,10 @@ module direction_aggregator_tb;
       #10;
     end
 
-    $display("Angle is %b", angle);
+    // $display("Angle is %b", angle);
+    for (integer i = 0; i < 4; i = i + 1) begin
+      $display("Mag_Bin %d is %b", i, mag_bins[i]);
+    end
 
     $display("Finishing Sim");
     $finish;

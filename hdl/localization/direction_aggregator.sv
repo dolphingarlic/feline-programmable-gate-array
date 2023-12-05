@@ -17,7 +17,7 @@ module direction_aggregator #(
     input wire [(DATA_WIDTH / 2) - 1:0] magnitude,
 
     // output logic [(DATA_WIDTH / 2) - 1:0] angle,
-    output logic signed [23:0] [3:0] mag_bins,
+    output logic signed [23:0] mag_bins [3:0],
     output logic angle_valid_out,
     output logic aggregator_ready,
 
@@ -37,7 +37,7 @@ module direction_aggregator #(
         .m_axis_dout_tvalid(cordic_valid)
     );
 
-    // Then we want the angle
+    // Then we want to store the angle
 
     logic signed [15:0] angle;
     assign angle = signed'(angle_phase_data[31:16]);
@@ -54,18 +54,19 @@ module direction_aggregator #(
             end
 
             counter <= 0;
-        end else if (direction_valid_in && counter < QUANTITY) begin
+        end else if (cordic_valid && counter < QUANTITY) begin
         
             // We want to add the direction to the correct bin
-            if (signed'(angle) >= 0 && signed'(angle) < signed'(16'h3244)) begin
-                mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
-            end else if (signed'(angle) >= signed'(16'h3244) && signed'(angle) <= signed'(16'h6488)) begin
-                mag_bins[1] <= signed'(mag_bins[1]) + signed'(magnitude);
-            end else if (signed'(angle) >= signed'(16'hcdbc) && signed'(angle) < 0) begin
-                mag_bins[2] <= signed'(mag_bins[2]) + signed'(magnitude);
-            end else if (signed'(angle) >= signed'(16'h9b78) && signed'(angle) < signed'(16'hcdbc)) begin
-                mag_bins[3] <= signed'(mag_bins[3]) + signed'(magnitude);
-            end
+            // if (signed'(angle) >= 0 && signed'(angle) < signed'(16'h3244)) begin
+            //     mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
+            // end else if (signed'(angle) >= signed'(16'h3244) && signed'(angle) <= signed'(16'h6488)) begin
+            //     mag_bins[1] <= signed'(mag_bins[1]) + signed'(magnitude);
+            // end else if (signed'(angle) >= signed'(16'hcdbc) && signed'(angle) < 0) begin
+            //     mag_bins[2] <= signed'(mag_bins[2]) + signed'(magnitude);
+            // end else if (signed'(angle) >= signed'(16'h9b78) && signed'(angle) < signed'(16'hcdbc)) begin
+            //     mag_bins[3] <= signed'(mag_bins[3]) + signed'(magnitude);
+            // end
+            mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
 
             counter <= counter + 1;
         end else if (m_axis_tready && angle_valid_out) begin
