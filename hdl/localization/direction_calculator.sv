@@ -30,7 +30,7 @@ module direction_calculator(
     always_comb begin
 
         for (integer i = 0; i < 3; i = i + 1) begin: loop
-            phase_differences[i] = signed'(central_mic[31:16]) - signed'(peripheral_mics[i][31:16]);
+            phase_differences[i] = signed'(peripheral_mics[i][31:16]) - signed'(central_mic[31:16]);
 
             // We need to constraint the phase_difference to be between -pi and pi
             if (phase_differences[i] > signed'(16'h6488)) begin // 16'h6488 is pi in 2Q13 format.

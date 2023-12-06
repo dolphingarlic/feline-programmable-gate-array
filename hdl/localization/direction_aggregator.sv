@@ -70,19 +70,19 @@ module direction_aggregator #(
             //     mag_bins[3] = signed'(mag_bins[1]) + signed'(magnitude);
             // end
 
-            // if (signed'(angle) >= 0) begin
-            //     mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
-            // end else begin
-            //     mag_bins[1] <= signed'(mag_bins[1]) + signed'(magnitude);
-            // end
-
-            if (signed'(angle) >= signed'(-16'h3244) && signed'(angle) < signed'(16'h3244)) begin
-                // Between pi/2 and -pi/2
+            if (signed'(angle) >= 0) begin
                 mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
             end else begin
-                // pi/2 or greater
                 mag_bins[1] <= signed'(mag_bins[1]) + signed'(magnitude);
             end
+
+            // if (signed'(angle) >= signed'(-16'h3244) && signed'(angle) < signed'(16'h3244)) begin
+            //     // Between pi/2 and -pi/2
+            //     mag_bins[0] <= signed'(mag_bins[0]) + signed'(magnitude);
+            // end else begin
+            //     // pi/2 or greater
+            //     mag_bins[1] <= signed'(mag_bins[1]) + signed'(magnitude);
+            // end
 
             counter <= counter + 1;
         end else if (counter == QUANTITY && !angle_valid_out) begin
