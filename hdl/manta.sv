@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns/1ps
 /*
-This module was generated with Manta v0.0.5 on 04 Dec 2023 at 21:44:05 by richard
+This module was generated with Manta v0.0.5 on 05 Dec 2023 at 09:30:22 by richard
 
 If this breaks or if you've got spicy formal verification memes, contact fischerm [at] mit.edu
 
@@ -19,7 +19,11 @@ manta manta_inst (
     .mag_bin_0(mag_bin_0), 
     .mag_bin_1(mag_bin_1), 
     .mag_bin_2(mag_bin_2), 
-    .mag_bin_3(mag_bin_3));
+    .mag_bin_3(mag_bin_3), 
+    .magnitude_stored(magnitude_stored), 
+    .aggregator_ready(aggregator_ready), 
+    .translate_ready(translate_ready), 
+    .aggregator_counter(aggregator_counter));
 
 */
 
@@ -32,7 +36,11 @@ module manta (
     input wire [23:0] mag_bin_0,
     input wire [23:0] mag_bin_1,
     input wire [23:0] mag_bin_2,
-    input wire [23:0] mag_bin_3);
+    input wire [23:0] mag_bin_3,
+    input wire [15:0] magnitude_stored,
+    input wire aggregator_ready,
+    input wire translate_ready,
+    input wire [8:0] aggregator_counter);
 
 
     uart_rx #(.CLOCKS_PER_BAUD(868)) urx (
@@ -70,6 +78,10 @@ module manta (
         .mag_bin_1(mag_bin_1),
         .mag_bin_2(mag_bin_2),
         .mag_bin_3(mag_bin_3),
+        .magnitude_stored(magnitude_stored),
+        .aggregator_ready(aggregator_ready),
+        .translate_ready(translate_ready),
+        .aggregator_counter(aggregator_counter),
     
         // input port
         .addr_i(brx_io_core_addr),
@@ -326,6 +338,10 @@ module io_core (
     input wire [23:0] mag_bin_1,
     input wire [23:0] mag_bin_2,
     input wire [23:0] mag_bin_3,
+    input wire [15:0] magnitude_stored,
+    input wire aggregator_ready,
+    input wire translate_ready,
+    input wire [8:0] aggregator_counter,
 
     // input port
     input wire [15:0] addr_i,
@@ -349,6 +365,10 @@ module io_core (
     reg [23:0] mag_bin_1_buf = 0;
     reg [23:0] mag_bin_2_buf = 0;
     reg [23:0] mag_bin_3_buf = 0;
+    reg [15:0] magnitude_stored_buf = 0;
+    reg aggregator_ready_buf = 0;
+    reg translate_ready_buf = 0;
+    reg [8:0] aggregator_counter_buf = 0;
 
     // output probe buffers
     
@@ -366,6 +386,10 @@ module io_core (
             mag_bin_1_buf <= mag_bin_1;
             mag_bin_2_buf <= mag_bin_2;
             mag_bin_3_buf <= mag_bin_3;
+            magnitude_stored_buf <= magnitude_stored;
+            aggregator_ready_buf <= aggregator_ready;
+            translate_ready_buf <= translate_ready;
+            aggregator_counter_buf <= aggregator_counter;
 
             // update output buffers from output probes
             
@@ -380,7 +404,7 @@ module io_core (
         valid_o <= valid_i;
 
         // check if address is valid
-        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 8)) begin
+        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 12)) begin
 
             // reads
             if(!rw_i) begin
@@ -395,6 +419,10 @@ module io_core (
                     BASE_ADDR + 6: data_o <= mag_bin_2_buf[23:16];
                     BASE_ADDR + 7: data_o <= mag_bin_3_buf[15:0];
                     BASE_ADDR + 8: data_o <= mag_bin_3_buf[23:16];
+                    BASE_ADDR + 9: data_o <= magnitude_stored_buf;
+                    BASE_ADDR + 10: data_o <= aggregator_ready_buf;
+                    BASE_ADDR + 11: data_o <= translate_ready_buf;
+                    BASE_ADDR + 12: data_o <= aggregator_counter_buf;
                 endcase
             end
 

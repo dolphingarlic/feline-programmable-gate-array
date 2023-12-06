@@ -9,6 +9,10 @@ cores:
       mag_bin_1: 24
       mag_bin_2: 24
       mag_bin_3: 24
+      magnitude_stored: 16
+      aggregator_ready: 1
+      translate_ready: 1
+      aggregator_counter: 9
 
 uart:
   port: "/dev/cu.usbserial-88742923012B1"

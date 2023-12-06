@@ -26,6 +26,8 @@ def binary_to_fixed_point(binary, n_bits=16, frac_index=3):
 #         fixed_point_angle = binary_to_fixed_point(phase)
 #         print((i, fixed_point_angle))
 
+val_store = [0, 0]
+count = 0
 
 while True:
     # x_dir = m.io_core.x_dir.get() # read in the output from our divider
@@ -49,7 +51,40 @@ while True:
     mag_bin_2 = m.io_core.mag_bin_2.get()
     mag_bin_3 = m.io_core.mag_bin_3.get()
 
-    print((mag_bin_0, mag_bin_1, mag_bin_2, mag_bin_3))
+    vals = [mag_bin_0, mag_bin_1, mag_bin_2, mag_bin_3]
+
+    i = vals.index(max(vals))
+
+    print(i)
+
+    # print(vals)
+
+    # i = vals.index(max(vals))
+
+    # last.append(i)
+    # last.pop(0)
+
+    # if last[0] == last[1] == last[2]:
+    #     print(last[0])
+
+    # print(i)
+
+    # print(vals)
+
+    # print([binary_to_fixed_point(val, 24, 10) for val in vals])
+
+    # magnitude_stored = m.io_core.magnitude_stored.get()
+
+    # print((mag_bin_0, mag_bin_1, mag_bin_2, mag_bin_3))
+
+    # fft_counter = m.io_core.fft_counter.get()
+    # aggregator_ready = m.io_core.aggregator_ready.get()
+    # translate_ready = m.io_core.translate_ready.get()
+    # print(mag_bin_0, fft_counter, aggregator_ready, translate_ready)
+    # print(magnitude_stored)
+    # print(mag_bin_0)
+
+    # print(aggregator_counter)
 
     # print((bin(direction_x), bin(direction_y)))
 

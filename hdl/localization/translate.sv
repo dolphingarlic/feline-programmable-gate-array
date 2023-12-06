@@ -22,6 +22,7 @@ module translate #(
     parameter DATA_WIDTH = 32
 )(
     input wire clk_in,
+    input wire rst_in,
 
     input wire [(CHANNELS * DATA_WIDTH) - 1:0] data_in,
     input wire valid_in,
@@ -34,6 +35,8 @@ module translate #(
     logic [CHANNELS - 1:0] cordic_valids; // Store channels worth of valids
     logic [CHANNELS - 1:0] cordic_readys;  // Store channels worth of readys
 
+    logic [DATA_WIDTH - 1: 0] data [CHANNELS - 1:0];
+
     genvar i;
 
     generate
@@ -43,14 +46,30 @@ module translate #(
                 .s_axis_cartesian_tdata(data_in[(DATA_WIDTH * i) +: DATA_WIDTH]),
                 .s_axis_cartesian_tvalid(valid_in),
                 .s_axis_cartesian_tready(cordic_readys[i]),
-                .m_axis_dout_tdata(data_out[i]),
+                .m_axis_dout_tdata(data[i]),
                 .m_axis_dout_tvalid(cordic_valids[i])
             );
         end
     endgenerate   
 
-    assign valid_out = &cordic_valids;
     assign ready_out = &cordic_readys;
+
+    // We want to store results in register
+    always_ff @(posedge clk_in) begin
+        if (rst_in) begin
+            valid_out <= 0;
+            for (integer j = 0; j < CHANNELS; j = j + 1) begin
+                data_out[j] <= 0;
+            end
+        end else if (&cordic_valids) begin
+            valid_out <= 1;
+            for (integer j = 0; j < CHANNELS; j = j + 1) begin
+                data_out[j] <= data[j];
+            end
+        end else if (valid_out) begin
+            valid_out <= 0;
+        end
+    end
 
 endmodule
 

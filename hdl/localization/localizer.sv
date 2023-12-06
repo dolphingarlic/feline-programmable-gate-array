@@ -3,7 +3,7 @@
 
 module localizer #(
     parameter LOWER_FFT_BOUND = 9,
-    parameter UPPER_FFT_BOUND = 200
+    parameter UPPER_FFT_BOUND = 180
 ) (
     input wire clk_in,
     input wire rst_in,
@@ -46,6 +46,8 @@ module localizer #(
 
     translate translate_inst (
         .clk_in(clk_in),
+        .rst_in(rst_in),
+
         .data_in(fft_data_in), // MSB:Y_IN,X_IN:0 https://docs.xilinx.com/v/u/en-US/pg105-cordic pg 16
         .valid_in(fft_valid_in && (fft_counter > LOWER_FFT_BOUND && fft_counter < UPPER_FFT_BOUND)),
 
@@ -58,7 +60,7 @@ module localizer #(
     // Calculate the direction vector           //
     //////////////////////////////////////////////
 
-    logic [37:0] direction_vector;
+    logic [31:0] direction_vector;
 
     direction_calculator direction_calculator_inst (
         .central_mic(translate_data[0]),
@@ -70,8 +72,10 @@ module localizer #(
     // Sum direction vectors to get angle        //
     ///////////////////////////////////////////////
 
-    logic signed [23:0] [3:0] mag_bins;
+    logic signed [23:0] mag_bins [3:0];
     logic aggregator_ready;
+
+    logic [9:0] aggregator_counter;
 
     direction_aggregator #(
         .QUANTITY(UPPER_FFT_BOUND - LOWER_FFT_BOUND - 1)
@@ -81,21 +85,24 @@ module localizer #(
 
         .direction_valid_in(translate_valid),
         .direction(direction_vector),
-        .magnitude(translate_data[0][31:16]),
+        .magnitude(translate_data[0][15:0]),
 
         // .angle(angle),
         .mag_bins(mag_bins),
         .angle_valid_out(angle_valid_out),
         .aggregator_ready(aggregator_ready),
 
-        .m_axis_tready(1'b1)
+        .m_axis_tready(1'b1),
+        .counter(aggregator_counter)
     );
 
     assign localizer_ready_out = aggregator_ready && translate_ready;
 
     // Store the angle
 
-    logic signed [23:0] [3:0] mag_bins_stored;
+    logic signed [23:0] mag_bins_stored [3:0];
+
+    logic [15:0] magnitude_stored;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin
@@ -118,7 +125,11 @@ module localizer #(
         .mag_bin_0(mag_bins_stored[0]),
         .mag_bin_1(mag_bins_stored[1]),
         .mag_bin_2(mag_bins_stored[2]),
-        .mag_bin_3(mag_bins_stored[3])
+        .mag_bin_3(mag_bins_stored[3]),
+        .magnitude_stored(magnitude_stored),
+        .aggregator_ready(aggregator_ready),
+        .translate_ready(translate_ready),
+        .aggregator_counter(aggregator_counter)
     );
 
 endmodule;
