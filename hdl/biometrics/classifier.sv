@@ -20,7 +20,7 @@ module classifier #(
   input wire ble_valid_in,
 
   input wire predict_enable_in,
-  input wire signed [15:0] loudness_threshold_in,
+  input wire signed [15:0] loudness_threshold_in, // 0xC950 works well
   output logic detected_out
 );
 

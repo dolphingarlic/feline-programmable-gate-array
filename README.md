@@ -14,5 +14,5 @@ To achieve this goal, we use a Xilinx Spartan-7 FPGA on a RealDigital Urbana boa
 - [x] Real-time linear SVM-based inference
 - [ ] Real-time audio localization
 - [ ] Autonomous servomotor controls
-- [ ] Real-time image recognition
+- [x] Real-time image recognition
 - [x] Audio playback
