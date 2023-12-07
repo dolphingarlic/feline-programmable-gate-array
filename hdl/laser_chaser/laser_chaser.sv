@@ -13,7 +13,7 @@ module laser_chaser (
 
   input wire [7:0] chroma_lower_bound_in, // 0x60 works well
   input wire [7:0] chroma_upper_bound_in, // 0xF0 works well
-  input wire [15:0] detection_threshold_in, // 0x0700 works well
+  input wire [15:0] detection_threshold_in, // 0x0300 works well
 
   input wire [7:0] pmoda,
   input wire [2:0] pmodb,
@@ -152,7 +152,7 @@ module laser_chaser (
         r_mask_cnt <= 0;
       end else begin
         // Upper half of the frame (i.e. the left side)
-        if (vcount_buf < 160) l_mask_cnt <= l_mask_cnt + mask;
+        if (vcount_buf < 120) l_mask_cnt <= l_mask_cnt + mask;
         // Lower half of the frame (i.e. the right side)
         else r_mask_cnt <= r_mask_cnt + mask;
       end
