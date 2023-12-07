@@ -72,12 +72,12 @@ module classifier #(
 
         // READ SIDE
         .addrb(support_read_idx),
-        .dinb(16'b0),
         .clkb(clk_in),
+        .dinb(16'b0),
         .web(1'b0),
         .enb(support_read_valid),
-        .rstb(rst_in),
         .regceb(1'b1),
+        .rstb(rst_in),
         .doutb(support_read_data[i])
       );
     end

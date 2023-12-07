@@ -58,10 +58,11 @@ module top_level (
   // Playback audio to headphones
 
   logic audio_out;
-  pdm my_pdm(
+  meow meow_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .level_in(mic_audio_data),
+
+    .activate_in(btn[3]),
     .pdm_out(audio_out)
   );
 
