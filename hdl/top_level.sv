@@ -133,8 +133,6 @@ module top_level (
     .m_axis_data_tready(fft_ready)
   );
 
-  assign led[0] = audio_counter == 511;
-
   // // We can put this into the localizer
 
   logic angle_valid_out;

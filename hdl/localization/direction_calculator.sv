@@ -18,13 +18,16 @@ module direction_calculator(
     // CENTRAL MICROPHONE
     input wire [31:0] central_mic,
     // PERIPHERAL MICROPHONES
-    input wire [31:0] peripheral_mics [3],
-    // OUTPUT (x,y each 16 bits 7.9 fixed point)
+    input wire [31:0] peripheral_mics [2:0],
+    // OUTPUT (x,y each 16 bits 6.10 fixed point)
     output logic [37:0] vector
 );
-    logic signed [16:0] phase_differences [2:0]; // Each is 17 bits 4.13 fixed point
+    
     // NOTE: Since we constraint phase_differences to be -pi to pi we know it actually only takes up 16 bits 
+    logic signed [16:0] phase_differences [2:0]; // Each is 17 bits 4.13 fixed point
+
     logic signed [16:0] scaled_locations [2:0][1:0]; // Each loc has x,y. Both are 4.13. First is x, Second is y
+    
     logic signed [18:0] summed_locations [2]; // x, y both are 19 bits 6.13 fixed point
    
     always_comb begin
@@ -69,13 +72,6 @@ module direction_calculator(
             summed_locations[1] = signed'(summed_locations[1]) + signed'(scaled_locations[i][1]);
         end
     end
-
-    // logic signed [34:0] mag_scaled_x, mag_scaled_y;
-
-    // assign mag_scaled_x = signed'(summed_locations[0]) * signed'(central_mic[15:0]);
-    // assign mag_scaled_y = signed'(summed_locations[1]) * signed'(central_mic[15:0]);
-    // assign mag_scaled_x = signed'(summed_locations[0]);
-    // assign mag_scaled_y = signed'(summed_locations[1]);
 
     assign vector = {summed_locations[1][18:3], summed_locations[0][18:3]};
 endmodule

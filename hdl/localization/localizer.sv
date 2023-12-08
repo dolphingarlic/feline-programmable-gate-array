@@ -72,14 +72,12 @@ module localizer #(
     // Sum direction vectors to get angle        //
     ///////////////////////////////////////////////
 
-    logic signed [23:0] mag_bins [3:0];
     logic aggregator_ready;
+    logic [3:0] bin;
 
-    logic [9:0] aggregator_counter;
-
-    direction_aggregator #(
+    direction_binner #(
         .QUANTITY(UPPER_FFT_BOUND - LOWER_FFT_BOUND - 1)
-    ) direction_aggregator_inst (
+    ) direction_binner_inst (
         .clk_in(clk_in),
         .rst_in(rst_in),
 
@@ -87,32 +85,24 @@ module localizer #(
         .direction(direction_vector),
         .magnitude(translate_data[0][15:0]),
 
-        // .angle(angle),
-        .mag_bins(mag_bins),
-        .angle_valid_out(angle_valid_out),
+        .bin(bin),
+        .bin_valid_out(angle_valid_out),
         .aggregator_ready(aggregator_ready),
 
-        .m_axis_tready(1'b1),
-        .counter(aggregator_counter)
+        .m_axis_tready(1'b1)
     );
 
     assign localizer_ready_out = aggregator_ready && translate_ready;
 
     // Store the angle
 
-    logic signed [23:0] mag_bins_stored [3:0];
-
-    logic [15:0] magnitude_stored;
+    logic [3:0] bin_stored;
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin
-            for (integer i = 0; i < 4; i = i + 1) begin
-                mag_bins_stored[i] <= 0;
-            end
+            bin_stored <= 0;
         end else if (angle_valid_out) begin
-            for (integer i = 0; i < 4; i = i + 1) begin
-                mag_bins_stored[i] <= mag_bins[i];
-            end
+            bin_stored <= bin;
         end
     end
 
@@ -122,14 +112,7 @@ module localizer #(
         .rx(uart_rxd),
         .tx(uart_txd),
         
-        .mag_bin_0(mag_bins_stored[0]),
-        .mag_bin_1(mag_bins_stored[1]),
-        .mag_bin_2(mag_bins_stored[2]),
-        .mag_bin_3(mag_bins_stored[3]),
-        .magnitude_stored(magnitude_stored),
-        .aggregator_ready(aggregator_ready),
-        .translate_ready(translate_ready),
-        .aggregator_counter(aggregator_counter)
+        .bin(bin_stored)
     );
 
 endmodule;
