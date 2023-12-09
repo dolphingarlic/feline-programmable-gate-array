@@ -74,6 +74,12 @@ hanning_window:
 	vvp sim/hanning_window.out
 	gtkwave hanning_window.vcd
 
+.PHONY: servo
+servo:
+	iverilog -g2012 -o sim/servo.out sim/servo_tb.sv hdl/motors/servo.sv
+	vvp sim/servo.out
+	gtkwave	servo.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*

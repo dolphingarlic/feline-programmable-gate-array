@@ -12,9 +12,9 @@ module localizer #(
     input wire fft_valid_in,
     input wire fft_last,
 
-    output logic angle_valid_out,
+    output logic bin_valid_out,
     output logic localizer_ready_out,
-    output logic [15:0] angle,
+    output logic [3:0] bin_out,
 
     input wire uart_rxd,
     output logic uart_txd
@@ -86,7 +86,7 @@ module localizer #(
         .magnitude(translate_data[0][15:0]),
 
         .bin(bin),
-        .bin_valid_out(angle_valid_out),
+        .bin_valid_out(bin_valid_out),
         .aggregator_ready(aggregator_ready),
 
         .m_axis_tready(1'b1)
@@ -94,26 +94,15 @@ module localizer #(
 
     assign localizer_ready_out = aggregator_ready && translate_ready;
 
-    // Store the angle
-
-    logic [3:0] bin_stored;
+    // Store the bin
 
     always_ff @(posedge clk_in) begin
         if (rst_in) begin
-            bin_stored <= 0;
-        end else if (angle_valid_out) begin
-            bin_stored <= bin;
+            bin_out <= 0;
+        end else if (bin_valid_out) begin
+            bin_out <= bin;
         end
     end
-
-    manta manta_inst (
-        .clk(clk_in),
-
-        .rx(uart_rxd),
-        .tx(uart_txd),
-        
-        .bin(bin_stored)
-    );
 
 endmodule;
 

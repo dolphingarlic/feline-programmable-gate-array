@@ -19,7 +19,9 @@ module top_level (
   output logic [2:0] rgb1,
 
   output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
-	input wire [7:0] pmodb //input I/O used for SPI RX (in part 3)
+	input wire [7:0] pmodb, //input I/O used for SPI RX (in part 3)
+
+  output logic servo_0
 );
 
   // Global reset
@@ -135,8 +137,8 @@ module top_level (
 
   // // We can put this into the localizer
 
-  logic angle_valid_out;
-  logic [15:0] angle;
+  logic bin_valid_out;
+  logic [3:0] bin;
 
   localizer localizer_inst (
     .clk_in(clk_m),
@@ -147,12 +149,54 @@ module top_level (
     .fft_last(fft_last),
 
     .localizer_ready_out(fft_ready),
-    .angle_valid_out(angle_valid_out),
-    .angle(angle),
+    .bin_valid_out(bin_valid_out),
+    .bin_out(bin),
 
     .uart_rxd(uart_rxd),
     .uart_txd(uart_txd)
   );
+
+  logic [3:0] bin_store [2:0];
+
+  always_ff @(posedge clk_m) begin
+    if (sys_rst) begin
+      for (integer i = 0; i < 3; i = i + 1) begin
+        bin_store[i] <= 0;
+      end
+    end else if (bin_valid_out) begin
+      for (integer i = 0; i < 2; i = i + 1) begin
+        bin_store[i] <= bin_store[i+1];
+      end
+      bin_store[2] <= bin;
+    end
+  end
+
+  logic [3:0] servo_bin;
+
+  always_ff @(posedge clk_m) begin
+    if (sys_rst) begin
+      servo_bin <= 0;
+    end else if (bin_valid_out) begin
+      if (bin_store[0] == bin_store[1] && bin_store[1] == bin_store[2]) begin
+        servo_bin <= bin_store[0];
+      end
+    end
+  end
+
+  servo servo_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .bin(servo_bin),
+    .pwm_out(servo_0)
+  );
+
+  manta manta_inst (
+    .clk(clk_m),
+
+    .rx(uart_rxd),
+    .tx(uart_txd),
+    
+    .bin(servo_bin));
 
   // END LAB 7 STUFF
 

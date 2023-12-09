@@ -158,4 +158,4 @@ set_property PACKAGE_PIN A16 [ get_ports "uart_txd"]
 set_property IOSTANDARD LVCMOS33 [ get_ports "uart*"]
 
 # Pins for controlling the servo
-set_property PACKAGE_PIN L18 [ get_ports "servo_0"]
+set_property -dict {PACKAGE_PIN L18 IOSTANDARD LVCMOS33} [ get_ports "servo_0"]
