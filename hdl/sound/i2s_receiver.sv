@@ -15,13 +15,13 @@ module i2s_receiver #(
     input wire m_axis_aresetn, // Active low reset
     input wire m_axis_tready, // Indicates secondary ready to receive
     output logic m_axis_tvalid, // Indicates have data to send
-    output logic [DATA_WIDTH - 1 : 0] m_axis_tdata,
+    output logic [DATA_WIDTH - 1 : 0] m_axis_tdata [3:0],
     output logic m_axis_tlast,
 
     // I2S Interface
     input wire sck,
     input wire ws,
-    input wire sd
+    input wire [3:0] sd
 );
 
     logic sckd, sck_rise, sck_fall;
@@ -34,16 +34,24 @@ module i2s_receiver #(
 
     logic [$clog2(DATA_WIDTH + 1) - 1:0] counter;
 
-    logic [DATA_WIDTH - 1 : 0] data;
+    logic [DATA_WIDTH - 1 : 0] data [3:0];
 
     always_ff @(posedge m_axis_aclk) begin
         if (sck_fall) begin
             if (wsp) begin
-                data <= 0;
-                m_axis_tdata <= data;
+
+                for (integer i = 0; i < 4; i = i + 1) begin
+                    data[i] <= 0;
+                    m_axis_tdata[i] <= data[i];
+                end
+
                 counter <= 0;
             end else if (counter < DATA_WIDTH) begin
-                data[(DATA_WIDTH - 1) - counter] <= sd;
+
+                for (integer i = 0; i < 4; i = i + 1) begin
+                    data[i][(DATA_WIDTH - 1) - counter] <= sd[i];
+                end
+                
                 counter <= counter + 1;
             end
 
