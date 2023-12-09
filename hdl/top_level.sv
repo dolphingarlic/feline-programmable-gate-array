@@ -21,7 +21,12 @@ module top_level (
   output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
 	input wire [7:0] pmodb, //input I/O used for SPI RX (in part 3)
 
-  output logic servo_0
+  output logic servo_0,
+
+  input wire mic_data,
+  output logic sck,
+  output logic ws,
+  output logic sel
 );
 
   // Global reset
@@ -47,6 +52,7 @@ module top_level (
   logic audio_sample_valid;
   logic audio_sample_ready;
 
+  assign sel = 0;
   microphones my_microphones(
     .clk_in(clk_m),
     .rst_in(sys_rst),
@@ -75,10 +81,12 @@ module top_level (
   end
 
   logic audio_out;
-  pdm my_pdm(
+  meow meow_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
     .level_in(playback_audio),
+
+    .activate_in(btn[3]),
     .pdm_out(audio_out)
   );
 
@@ -133,6 +141,32 @@ module top_level (
     .m_axis_data_tvalid(fft_valid),
     .m_axis_data_tlast(fft_last),
     .m_axis_data_tready(fft_ready)
+  );
+
+  logic ble_uart_rx_clean;
+
+  synchronizer ble_uart_rx_synchronizer (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .us_in(ble_uart_rx),
+    .s_out(ble_uart_rx_clean)
+  );
+
+  biometrics biometrics_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .write_enable_in(btn[1]),
+    .predict_enable_in(btn[2]),
+
+    .fft_data_in(fft_data),
+    .fft_valid_in(fft_valid),
+    .fft_last(fft_last),
+
+    .ble_uart_rx_in(ble_uart_rx_clean),
+    .ble_uart_tx_out(ble_uart_tx),
+
+    .loudness_threshold_in(sw),
+    .detected_out(rgb0[0])
   );
 
   // // We can put this into the localizer

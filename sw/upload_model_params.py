@@ -2,13 +2,12 @@ import asyncio
 import sys
 from itertools import count, takewhile
 from typing import Iterator
-import csv
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
-import matplotlib.pyplot as plt
+from sklearn.svm import OneClassSVM
 import numpy as np
 
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -18,7 +17,7 @@ UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 N_FEATURES = 32
 
 feature_buffer = b""
-features = []
+detected = False
 
 
 # TIP: you can get this function and more from the ``more-itertools`` package.
@@ -35,6 +34,9 @@ async def uart_terminal():
     (nRF) UART service. It reads from stdin and sends each line of data to the
     remote device. Any data received from the device is printed to stdout.
     """
+
+    data = np.genfromtxt('sw/data/features.csv', delimiter=',')
+    svm_model = OneClassSVM(kernel='linear', nu=0.1).fit(data)
 
     def match_nus_uuid(device: BLEDevice, adv: AdvertisementData):
         # This assumes that the device includes the UART service UUID in the
@@ -53,35 +55,42 @@ async def uart_terminal():
 
     def handle_disconnect(_: BleakClient):
         print("Device was disconnected, goodbye.")
-        # plt.imshow(np.array(features).T, aspect='auto', interpolation=None)
-        # plt.figure(1, figsize=(5, 10))
-        # plt.show()
-        with open('sw/data/features.csv', 'w', newline='') as csvfile:
-            feature_writer = csv.writer(csvfile)
-            feature_writer.writerows(features)
         # cancelling all tasks effectively ends the program
         for task in asyncio.all_tasks():
             task.cancel()
 
-    def handle_rx(_: BleakGATTCharacteristic, data: bytearray):
-        global feature_buffer
-
-        feature_buffer += data
-        if (len(feature_buffer) >= N_FEATURES):
-            new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='little', signed=True) for i in range(0, N_FEATURES, 2)]
-            if new_feat[0] > -14000:
-                print(len(features) + 1)
-                print(new_feat)
-                features.append(new_feat[1:])
-            feature_buffer = b""
-
     async with BleakClient(device, disconnected_callback=handle_disconnect) as client:
-        await client.start_notify(UART_TX_CHAR_UUID, handle_rx)
-        print("Connected")
+        print("Connected!")
+        nus = client.services.get_service(UART_SERVICE_UUID)
+        rx_char = nus.get_characteristic(UART_RX_CHAR_UUID)
+        np.set_printoptions(linewidth=np.inf)
+        await asyncio.sleep(0.5)
 
-        loop = asyncio.get_running_loop()
-        while True:
-            data = await loop.run_in_executor(None, sys.stdin.buffer.readline)
+        print(f"Sending number of support vectors: {svm_model.n_support_[0]}")
+        n_byte = int(svm_model.n_support_[0]).to_bytes(1, "big")
+        await client.write_gatt_char(rx_char, n_byte, response=False)
+        print()
+        await asyncio.sleep(0.05)
+
+        print("Sending support vectors:")
+        duals = svm_model.dual_coef_[0]
+        supports = svm_model.support_vectors_
+        scaled_and_rounded = np.round((supports.T * duals).T)
+        for i, vec in enumerate(scaled_and_rounded):
+            print(f"Vector {i}: {vec}")
+            vec_bytes = b''.join([int(coef).to_bytes(2, "big", signed=True) for coef in vec])
+            for s in sliced(vec_bytes, rx_char.max_write_without_response_size):
+                await client.write_gatt_char(rx_char, s, response=False)
+                await asyncio.sleep(0.05)
+        print()
+        
+        print(f"Sending bias: {round(svm_model.offset_[0])}")
+        bias_bytes = int(round(svm_model.offset_[0])).to_bytes(4, "big", signed=True)
+        await client.write_gatt_char(rx_char, bias_bytes, response=False)
+        print()
+        await asyncio.sleep(0.5)
+
+        print("Done!")
 
 
 if __name__ == "__main__":

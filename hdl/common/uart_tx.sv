@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-module uart_tx #(
+module ble_uart_tx #(
   parameter SAMPLE_RATE = 16
 ) (
   input wire clk_in,

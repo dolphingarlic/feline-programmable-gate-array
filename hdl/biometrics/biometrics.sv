@@ -10,6 +10,7 @@ module biometrics (
   input wire clk_in,
   input wire rst_in,
   input wire write_enable_in,
+  input wire predict_enable_in,
 
   input wire [31:0] fft_data_in,
   input wire fft_valid_in,
@@ -21,6 +22,7 @@ module biometrics (
   output logic ble_uart_tx_out,
   output logic ble_uart_rts_out,
   
+  input wire signed [15:0] loudness_threshold_in,
   output logic detected_out
 );
 
@@ -71,13 +73,21 @@ module biometrics (
   ////////////////////
   // CLASSIFICATION //
   ////////////////////
-  logic detected_buffer;
+  classifier classifier_inst (
+    .clk_in(clk_in),
+    .rst_in(rst_in),
 
-  always_ff @(posedge clk_in) begin
-    if (ble_valid) detected_buffer <= (ble_data != 0);
-  end
+    .feature_data_in(feature_data),
+    .feature_valid_in(feature_valid && feature_ready),
+    .feature_last_in(feature_last),
 
-  assign detected_out = write_enable_in && detected_buffer; // TODO: fix me
+    .ble_data_in(ble_data),
+    .ble_valid_in(ble_valid),
+
+    .predict_enable_in(predict_enable_in),
+    .loudness_threshold_in(loudness_threshold_in),
+    .detected_out(detected_out)
+  );
 
 endmodule
 

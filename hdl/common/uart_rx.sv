@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-module uart_rx #(
+module ble_uart_rx #(
   parameter SAMPLE_RATE = 16
 ) (
   input wire clk_in,
@@ -48,9 +48,9 @@ module uart_rx #(
 
         if (counter == SAMPLE_RATE / 2 - 1) begin
           if (state == WAIT_FOR_START) state <= READ;
-          else if (num_bits_read < 8) begin
+          else if (num_bits_read < 9) begin
             // UART is little endian
-            data_out <= {rx_in, data_out[7:1]};
+            if (num_bits_read != 8) data_out <= {rx_in, data_out[7:1]};
             num_bits_read <= num_bits_read + 1;
           end else if (rx_in) begin
             // We've detected the end (high) bit
