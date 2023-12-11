@@ -22,7 +22,7 @@ module uart_end_to_end_tb;
     .rst_in(rst_in),
     .tick_out(uart_tick)
   );
-  uart_tx #(
+  ble_uart_tx #(
     .SAMPLE_RATE(16)
   ) uut (
     .clk_in(clk_in),
@@ -34,7 +34,7 @@ module uart_end_to_end_tb;
     .busy_out(busy_out),
     .done_out(tx_done_out)
   );
-  uart_rx #(
+  ble_uart_rx #(
     .SAMPLE_RATE(16)
   ) uart_rx_inst (
     .clk_in(clk_in),

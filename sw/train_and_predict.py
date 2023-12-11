@@ -39,7 +39,6 @@ async def uart_terminal():
 
     data = np.genfromtxt('sw/data/features.csv', delimiter=',')
     svm_model = OneClassSVM(kernel='linear', nu=0.1).fit(data)
-    gmm_model = GaussianMixture().fit(data)
 
     def match_nus_uuid(device: BLEDevice, adv: AdvertisementData):
         # This assumes that the device includes the UART service UUID in the
@@ -69,12 +68,12 @@ async def uart_terminal():
         feature_buffer += data
         if (len(feature_buffer) >= N_FEATURES):
             new_feat = [int.from_bytes(feature_buffer[i:i+2], byteorder='little', signed=True) for i in range(0, N_FEATURES, 2)]
-            print(new_feat)
             svm_pred = svm_model.predict(np.array([new_feat[1:]]))[0]
 
-            detected = new_feat[0] > -16000 and svm_pred == 1
-            if new_feat[0] > -16000:
-                print(gmm_model.score(np.array([new_feat[1:]])))
+            detected = new_feat[0] > -14000 and svm_pred == 1
+            if new_feat[0] > -14000:
+                print(detected)
+                # print(gmm_model.score(np.array([new_feat[1:]])))
 
             feature_buffer = b""
 
@@ -118,8 +117,32 @@ async def uart_terminal():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(uart_terminal())
-    except asyncio.CancelledError:
-        # task is cancelled on disconnect, so we ignore this error
-        pass
+    # try:
+    #     asyncio.run(uart_terminal())
+    # except asyncio.CancelledError:
+    #     # task is cancelled on disconnect, so we ignore this error
+    #     pass
+    data = np.genfromtxt('sw/data/features.csv', delimiter=',')
+    svm_model = OneClassSVM(kernel='linear', nu=0.1).fit(data)
+
+    print('NUMBER OF SUPPORT VECTORS:')
+    print(svm_model.n_support_[0])
+    print()
+
+    # print('WEIGHTS OF SUPPORT VECTORS:')
+    # print(svm_model.dual_coef_[0])
+    # print()
+    
+    # print('SUPPORT VECTORS:')
+    # print(svm_model.support_vectors_)
+    # print()
+
+    print('SCALED AND ROUNDED SUPPORT VECTORS:')
+    duals = svm_model.dual_coef_[0]
+    supports = svm_model.support_vectors_
+    scaled = (supports.T * duals).T
+    print(np.round(scaled))
+    print()
+
+    print('BIAS:')
+    print(round(svm_model.intercept_[0]))

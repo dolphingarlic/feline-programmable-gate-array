@@ -22,14 +22,16 @@ read_verilog -sv [ glob ./hdl/*.sv ]
 # read_verilog -sv [ glob ./hdl/biometrics/feature_extractor/*.sv ]
 # read_verilog -sv [ glob ./hdl/common/*.sv ]
 read_verilog -sv [ glob ./hdl/sound/*.sv ]
+read_verilog -sv [ glob ./hdl/meow/*.sv ]
 read_verilog [ glob ./hdl/sound/*.v ]
 read_verilog [ glob ./hdl/motors/*.sv ]
 read_verilog -sv [ glob ./hdl/localization/*.sv ]
+read_verilog [ glob ./hdl/common/*.v ]
 # uncomment line below if verilog (.v) files present:
 # read_verilog  [ glob ./hdl/*.v ]
 read_xdc ./xdc/top_level.xdc
 #we'll use this later:
-#read_mem [ glob ./data/*.mem ]
+read_mem [ glob ./data/*.mem ]
 
 # set the part number so Vivado knows how to build (each FPGA is different)
 set_part $partNum

@@ -4,6 +4,7 @@ SOURCES :=                                      \
 	xdc/                                        \
 	sim/                                        \
 	ip/                                         \
+	data/										\
 
 .PHONY: flash
 flash:

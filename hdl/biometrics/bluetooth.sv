@@ -121,7 +121,7 @@ module bluetooth #(
     end
   end
 
-  uart_tx #(
+  ble_uart_tx #(
     .SAMPLE_RATE(SAMPLE_RATE)
   ) uart_tx_inst (
     .clk_in(clk_in),
@@ -137,7 +137,7 @@ module bluetooth #(
   ///////////////
   // READ DATA //
   ///////////////
-  uart_rx #(
+  ble_uart_rx #(
     .SAMPLE_RATE(SAMPLE_RATE)
   ) uart_rx_inst (
     .clk_in(clk_in),
