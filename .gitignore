@@ -20,8 +20,6 @@ ip_tb/
 ip/i2s_receiver/ip/
 ip/fir_compiler_0/ip/*
 ip/fir_compiler_1/ip/*
-ip/cordic_0/ip/*
-ip/xfft_0/ip/*
 .Xil/i2s_receiver_propImpl.xdc
 
 *.vcd
