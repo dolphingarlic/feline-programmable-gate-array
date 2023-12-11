@@ -64,6 +64,23 @@ microphones_no_ip:
 	vvp sim/microphones_no_ip.out
 	gtkwave microphones_no_ip.vcd
 
+.PHONY: direction_calculator
+direction_calculator:
+	iverilog -g2012 -o sim/direction_calculator.out sim/direction_calculator_tb.sv hdl/localization/direction_calculator.sv
+	vvp sim/direction_calculator.out
+
+.PHONY: hanning_window
+hanning_window:
+	iverilog -g2012 -o sim/hanning_window.out sim/hanning_window_tb.sv hdl/sound/hanning_window.sv
+	vvp sim/hanning_window.out
+	gtkwave hanning_window.vcd
+
+.PHONY: servo
+servo:
+	iverilog -g2012 -o sim/servo.out sim/servo_tb.sv hdl/motors/servo.sv
+	vvp sim/servo.out
+	gtkwave	servo.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
