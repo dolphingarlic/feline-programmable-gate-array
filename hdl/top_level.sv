@@ -21,7 +21,10 @@ module top_level (
   output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
 	input wire [7:0] pmodb, //input I/O used for SPI RX (in part 3)
 
-  output logic servo_0
+  output logic servo_0,
+  output logic servo_1,
+  output logic servo_2,
+  output logic servo_3
 
   // input wire mic_data,
   // output logic sck,
@@ -65,7 +68,7 @@ module top_level (
     .audio_ready(audio_sample_ready)
   );
 
-  // Playback audio to headphones
+  // // Playback audio to headphones
 
   logic [15:0] playback_audio;
 
@@ -80,7 +83,16 @@ module top_level (
       playback_audio = mic_audio_data[3];
   end
 
-  // logic audio_out;
+  logic audio_out;
+
+  pdm pdm_inst(
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .level_in(playback_audio),
+    .pdm_out(audio_out)
+  );
+
+  
   // meow meow_inst (
   //   .clk_in(clk_m),
   //   .rst_in(sys_rst),
@@ -89,8 +101,8 @@ module top_level (
   //   .pdm_out(audio_out)
   // );
 
-  // assign spkl = audio_out;
-  // assign spkr = audio_out;
+  assign spkl = audio_out;
+  assign spkr = audio_out;
 
   /////////////////////////////////////
   // Calculate FFT of the audio data //
@@ -98,49 +110,49 @@ module top_level (
 
   // Count amount of samples
 
-  logic [8:0] audio_counter;
+  // logic [8:0] audio_counter;
 
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) audio_counter <= 0;
-    else if (audio_sample_valid) audio_counter <= audio_counter + 1;
-  end
+  // always_ff @(posedge clk_m) begin
+  //   if (sys_rst) audio_counter <= 0;
+  //   else if (audio_sample_valid) audio_counter <= audio_counter + 1;
+  // end
 
   // Pass audio data through hanning-window
 
-  logic signed [15:0] hanning_windowed_audio_data [3:0];
-  logic hanning_window_audio_valid;
+  // logic signed [15:0] hanning_windowed_audio_data [3:0];
+  // logic hanning_window_audio_valid;
 
-  hanning_window hanning_window_inst (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
+  // hanning_window hanning_window_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
 
-    .sample(audio_counter),
-    .audio_data_in(mic_audio_data),
-    .audio_valid_in(audio_sample_valid),
-    .audio_data_out(hanning_windowed_audio_data),
-    .audio_valid_out(hanning_window_audio_valid)
-  );
+  //   .sample(audio_counter),
+  //   .audio_data_in(mic_audio_data),
+  //   .audio_valid_in(audio_sample_valid),
+  //   .audio_data_out(hanning_windowed_audio_data),
+  //   .audio_valid_out(hanning_window_audio_valid)
+  // );
 
-  // Calculate FFT
+  // // Calculate FFT
 
-  logic [127:0] fft_data;
-  logic fft_valid, fft_last, fft_ready;
+  // logic [127:0] fft_data;
+  // logic fft_valid, fft_last, fft_ready;
 
-  xfft_0 xfft_0_inst (
-    .aclk(clk_m),
-    // TODO: Use multiple microphones
-    .s_axis_data_tdata({16'b0, hanning_windowed_audio_data[3], 16'b0, hanning_windowed_audio_data[2], 16'b0, hanning_windowed_audio_data[1], 16'b0, hanning_windowed_audio_data[0]}), // We only have real-data
-    .s_axis_data_tvalid(hanning_window_audio_valid),
-    .s_axis_data_tlast(audio_counter == 511),
-    .s_axis_data_tready(audio_sample_ready),
-    .s_axis_config_tdata(16'b0),
-    .s_axis_config_tvalid(1'b0),
-    .s_axis_config_tready(1'b1),
-    .m_axis_data_tdata(fft_data),
-    .m_axis_data_tvalid(fft_valid),
-    .m_axis_data_tlast(fft_last),
-    .m_axis_data_tready(fft_ready)
-  );
+  // xfft_0 xfft_0_inst (
+  //   .aclk(clk_m),
+  //   // TODO: Use multiple microphones
+  //   .s_axis_data_tdata({16'b0, hanning_windowed_audio_data[3], 16'b0, hanning_windowed_audio_data[2], 16'b0, hanning_windowed_audio_data[1], 16'b0, hanning_windowed_audio_data[0]}), // We only have real-data
+  //   .s_axis_data_tvalid(hanning_window_audio_valid),
+  //   .s_axis_data_tlast(audio_counter == 511),
+  //   .s_axis_data_tready(audio_sample_ready),
+  //   .s_axis_config_tdata(16'b0),
+  //   .s_axis_config_tvalid(1'b0),
+  //   .s_axis_config_tready(1'b1),
+  //   .m_axis_data_tdata(fft_data),
+  //   .m_axis_data_tvalid(fft_valid),
+  //   .m_axis_data_tlast(fft_last),
+  //   .m_axis_data_tready(fft_ready)
+  // );
 
   // logic ble_uart_rx_clean;
 
@@ -170,66 +182,82 @@ module top_level (
 
   // // We can put this into the localizer
 
-  logic bin_valid_out;
-  logic [3:0] bin;
+  // logic bin_valid_out;
+  // logic [3:0] bin;
 
-  localizer localizer_inst (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
+  // localizer localizer_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
 
-    .fft_data_in(fft_data),
-    .fft_valid_in(fft_valid),
-    .fft_last(fft_last),
+  //   .fft_data_in(fft_data),
+  //   .fft_valid_in(fft_valid),
+  //   .fft_last(fft_last),
 
-    .localizer_ready_out(fft_ready),
-    .bin_valid_out(bin_valid_out),
-    .bin_out(bin),
+  //   .localizer_ready_out(fft_ready),
+  //   .bin_valid_out(bin_valid_out),
+  //   .bin_out(bin),
 
-    .uart_rxd(uart_rxd),
-    .uart_txd(uart_txd)
-  );
+  //   .uart_rxd(uart_rxd),
+  //   .uart_txd(uart_txd)
+  // );
 
-  logic [3:0] bin_store [2:0];
+  // logic [3:0] bin_store [2:0];
 
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) begin
-      for (integer i = 0; i < 3; i = i + 1) begin
-        bin_store[i] <= 0;
-      end
-    end else if (bin_valid_out) begin
-      for (integer i = 0; i < 2; i = i + 1) begin
-        bin_store[i] <= bin_store[i+1];
-      end
-      bin_store[2] <= bin;
-    end
-  end
+  // always_ff @(posedge clk_m) begin
+  //   if (sys_rst) begin
+  //     for (integer i = 0; i < 3; i = i + 1) begin
+  //       bin_store[i] <= 0;
+  //     end
+  //   end else if (bin_valid_out) begin
+  //     for (integer i = 0; i < 2; i = i + 1) begin
+  //       bin_store[i] <= bin_store[i+1];
+  //     end
+  //     bin_store[2] <= bin;
+  //   end
+  // end
 
-  logic [3:0] servo_bin;
+  // logic [3:0] servo_bin;
 
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) begin
-      servo_bin <= 0;
-    end else if (bin_valid_out) begin
-      if (bin_store[0] == bin_store[1] && bin_store[1] == bin_store[2]) begin
-        servo_bin <= bin_store[0];
-      end
-    end
-  end
+  // always_ff @(posedge clk_m) begin
+  //   if (sys_rst) begin
+  //     servo_bin <= 0;
+  //   end else if (bin_valid_out) begin
+  //     if (bin_store[0] == bin_store[1] && bin_store[1] == bin_store[2]) begin
+  //       servo_bin <= bin_store[0];
+  //     end
+  //   end
+  // end
 
-  servo servo_inst (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .bin(servo_bin),
-    .pwm_out(servo_0)
-  );
+  // dc_motors motor_inst(
+  //   .clk_in(clk_100mhz),
+  //   .rst_in(sys_rst),
 
-  manta manta_inst (
-    .clk(clk_m),
+  //   .speed_left(sw[7:0]),
+  //   .speed_right(sw[15:8]),
 
-    .rx(uart_rxd),
-    .tx(uart_txd),
+  //   .in1(servo_0),
+  //   .in2(servo_1),
+  //   .in3(servo_2),
+  //   .in4(servo_3),
+
+  //   .ena(pmoda[2]),
+  //   .enb(pmoda[3])
+  // );
+
+  // servo servo_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .bin(servo_bin),
+  //   .pwm_out(servo_0)
+  // );
+
+  // manta manta_inst (
+  //   .clk(clk_m),
+
+  //   .rx(uart_rxd),
+  //   .tx(uart_txd),
     
-    .bin(servo_bin));
+  //   .bin(servo_bin));
 
   // END LAB 7 STUFF
 

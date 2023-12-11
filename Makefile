@@ -81,6 +81,12 @@ servo:
 	vvp sim/servo.out
 	gtkwave	servo.vcd
 
+.PHONY: dc_motors
+dc_motors:
+	iverilog -g2012 -o sim/dc_motors.out sim/dc_motors_tb.sv hdl/motors/dc_motors.sv
+	vvp sim/dc_motors.out
+	gtkwave	dc_motors.vcd
+
 .PHONY: clean
 clean:
 	rm -rf obj/*
