@@ -84,7 +84,6 @@ module top_level (
   meow meow_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .level_in(playback_audio),
 
     .activate_in(btn[3]),
     .pdm_out(audio_out)
@@ -143,31 +142,31 @@ module top_level (
     .m_axis_data_tready(fft_ready)
   );
 
-  logic ble_uart_rx_clean;
+  // logic ble_uart_rx_clean;
 
-  synchronizer ble_uart_rx_synchronizer (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .us_in(ble_uart_rx),
-    .s_out(ble_uart_rx_clean)
-  );
+  // synchronizer ble_uart_rx_synchronizer (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .us_in(ble_uart_rx),
+  //   .s_out(ble_uart_rx_clean)
+  // );
 
-  biometrics biometrics_inst (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .write_enable_in(btn[1]),
-    .predict_enable_in(btn[2]),
+  // biometrics biometrics_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .write_enable_in(btn[1]),
+  //   .predict_enable_in(btn[2]),
 
-    .fft_data_in(fft_data),
-    .fft_valid_in(fft_valid),
-    .fft_last(fft_last),
+  //   .fft_data_in(fft_data),
+  //   .fft_valid_in(fft_valid),
+  //   .fft_last(fft_last),
 
-    .ble_uart_rx_in(ble_uart_rx_clean),
-    .ble_uart_tx_out(ble_uart_tx),
+  //   .ble_uart_rx_in(ble_uart_rx_clean),
+  //   .ble_uart_tx_out(ble_uart_tx),
 
-    .loudness_threshold_in(sw),
-    .detected_out(rgb0[0])
-  );
+  //   .loudness_threshold_in(sw),
+  //   .detected_out(rgb0[0])
+  // );
 
   // // We can put this into the localizer
 
