@@ -8,8 +8,8 @@ module top_level (
 
   output logic spkl, spkr, //speaker outputs
 
-  input wire ble_uart_rx,
-  output logic ble_uart_tx,
+  // input wire ble_uart_rx,
+  // output logic ble_uart_tx,
 
   input wire uart_rxd,
   output logic uart_txd,
@@ -21,12 +21,12 @@ module top_level (
   output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
 	input wire [7:0] pmodb, //input I/O used for SPI RX (in part 3)
 
-  output logic servo_0,
+  output logic servo_0
 
-  input wire mic_data,
-  output logic sck,
-  output logic ws,
-  output logic sel
+  // input wire mic_data,
+  // output logic sck,
+  // output logic ws,
+  // output logic sel
 );
 
   // Global reset
@@ -52,7 +52,7 @@ module top_level (
   logic audio_sample_valid;
   logic audio_sample_ready;
 
-  assign sel = 0;
+  // assign sel = 0;
   microphones my_microphones(
     .clk_in(clk_m),
     .rst_in(sys_rst),
@@ -80,17 +80,17 @@ module top_level (
       playback_audio = mic_audio_data[3];
   end
 
-  logic audio_out;
-  meow meow_inst (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
+  // logic audio_out;
+  // meow meow_inst (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
 
-    .activate_in(btn[3]),
-    .pdm_out(audio_out)
-  );
+  //   .activate_in(btn[3]),
+  //   .pdm_out(audio_out)
+  // );
 
-  assign spkl = audio_out;
-  assign spkr = audio_out;
+  // assign spkl = audio_out;
+  // assign spkr = audio_out;
 
   /////////////////////////////////////
   // Calculate FFT of the audio data //
