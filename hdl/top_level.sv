@@ -158,18 +158,15 @@ module top_level (
     .uart_txd(uart_txd)
   );
 
-  logic [3:0] bin_store [2:0];
+  logic [3:0] bin_store [1:0];
 
   always_ff @(posedge clk_m) begin
     if (sys_rst) begin
-      for (integer i = 0; i < 3; i = i + 1) begin
-        bin_store[i] <= 0;
-      end
+      bin_store[0] <= 0;
+      bin_store[1] <= 0;
     end else if (bin_valid_out) begin
-      for (integer i = 0; i < 2; i = i + 1) begin
-        bin_store[i] <= bin_store[i+1];
-      end
-      bin_store[2] <= bin;
+      bin_store[0] <= bin_store[1];
+      bin_store[1] <= bin;
     end
   end
 
@@ -179,45 +176,45 @@ module top_level (
     if (sys_rst) begin
       servo_bin <= 0;
     end else if (bin_valid_out) begin
-      if (bin_store[0] == bin_store[1] && bin_store[1] == bin_store[2]) begin
+      if (bin_store[0] == bin_store[1]) begin
         servo_bin <= bin_store[0];
       end
     end
   end
 
-  logic [21:0] left_divisor;
-  logic [21:0] right_divisor;
+  // logic [21:0] left_divisor;
+  // logic [21:0] right_divisor;
 
-  always_comb begin
-    case (bin)
-      12, 13, 14, 15, 0, 1, 2, 3: begin
-        left_divisor = 22'd147_456;
-        right_divisor = 22'd196_608;
-      end
-      4: begin
-        left_divisor = 22'd147_456;
-        right_divisor = 22'd147_456;
-      end
-      5, 6, 7, 8, 9, 10, 11: begin
-        left_divisor = 22'd196_608;
-        right_divisor = 22'd147_456;
-      end
-    endcase
-  end
+  // always_comb begin
+  //   case (bin)
+  //     12, 13, 14, 15, 0, 1, 2, 3: begin
+  //       left_divisor = 22'd147_456;
+  //       right_divisor = 22'd196_608;
+  //     end
+  //     4: begin
+  //       left_divisor = 22'd147_456;
+  //       right_divisor = 22'd147_456;
+  //     end
+  //     5, 6, 7, 8, 9, 10, 11: begin
+  //       left_divisor = 22'd196_608;
+  //       right_divisor = 22'd147_456;
+  //     end
+  //   endcase
+  // end
 
-  servo_continuous left_servo (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .divisor(left_divisor),
-    .pwm_out(servo_0)
-  );
+  // servo_continuous left_servo (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .divisor(left_divisor),
+  //   .pwm_out(servo_0)
+  // );
 
-  servo_continuous right_servo (
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .divisor(right_divisor),
-    .pwm_out(servo_1)
-  );
+  // servo_continuous right_servo (
+  //   .clk_in(clk_m),
+  //   .rst_in(sys_rst),
+  //   .divisor(right_divisor),
+  //   .pwm_out(servo_1)
+  // );
 
   servo servo_inst (
     .clk_in(clk_m),
@@ -232,7 +229,7 @@ module top_level (
     .rx(uart_rxd),
     .tx(uart_txd),
     
-    .bin(servo_bin));
+    .bin(bin));
 
   // END LAB 7 STUFF
 
