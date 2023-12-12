@@ -3,7 +3,7 @@
 
 module localizer #(
     parameter LOWER_FFT_BOUND = 9,
-    parameter UPPER_FFT_BOUND = 180
+    parameter UPPER_FFT_BOUND = 225
 ) (
     input wire clk_in,
     input wire rst_in,

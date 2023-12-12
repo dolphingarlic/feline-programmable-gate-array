@@ -21,7 +21,9 @@ module top_level (
   output logic [7:0] pmoda, //output I/O used for SPI TX (in part 3)
 	input wire [7:0] pmodb, //input I/O used for SPI RX (in part 3)
 
-  output logic servo_0
+  output logic servo_0,
+  output logic servo_1,
+  output logic servo_2
 );
 
   // Global reset
@@ -183,11 +185,45 @@ module top_level (
     end
   end
 
+  logic [21:0] left_divisor;
+  logic [21:0] right_divisor;
+
+  always_comb begin
+    case (bin)
+      12, 13, 14, 15, 0, 1, 2, 3: begin
+        left_divisor = 22'd147_456;
+        right_divisor = 22'd196_608;
+      end
+      4: begin
+        left_divisor = 22'd147_456;
+        right_divisor = 22'd147_456;
+      end
+      5, 6, 7, 8, 9, 10, 11: begin
+        left_divisor = 22'd196_608;
+        right_divisor = 22'd147_456;
+      end
+    endcase
+  end
+
+  servo_continuous left_servo (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .divisor(left_divisor),
+    .pwm_out(servo_0)
+  );
+
+  servo_continuous right_servo (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .divisor(right_divisor),
+    .pwm_out(servo_1)
+  );
+
   servo servo_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
     .bin(servo_bin),
-    .pwm_out(servo_0)
+    .pwm_out(servo_2)
   );
 
   manta manta_inst (

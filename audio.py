@@ -84,11 +84,13 @@ while True:
 
     audio_bin = m.io_core.bin.get()
 
-    val_store.pop(0)
-    val_store.append(audio_bin)
+    print(audio_bin)
 
-    if val_store[0] == val_store[1] == val_store[2] == val_store[3] == val_store[4] == val_store[5]:
-        print(val_store[0])
+    # val_store.pop(0)
+    # val_store.append(audio_bin)
+
+    # if val_store[0] == val_store[1] == val_store[2] == val_store[3] == val_store[4] == val_store[5]:
+    #     print(val_store[0])
 
 # direction_x = m.io_core.direction_x.get()
 # direction_y = m.io_core.direction_y.get()
