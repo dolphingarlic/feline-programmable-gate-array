@@ -18,9 +18,7 @@ module biometrics (
   output logic fft_ready_out,
 
   input wire ble_uart_rx_in,
-  input wire ble_uart_cts_in,
   output logic ble_uart_tx_out,
-  output logic ble_uart_rts_out,
   
   input wire signed [15:0] loudness_threshold_in,
   output logic detected_out

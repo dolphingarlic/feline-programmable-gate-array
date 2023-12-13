@@ -2,7 +2,6 @@ SOURCES :=                                      \
 	hdl/                                        \
 	obj/                                        \
 	xdc/                                        \
-	sim/                                        \
 	ip/                                         \
 	data/										\
 

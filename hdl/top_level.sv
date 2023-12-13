@@ -62,32 +62,6 @@ module top_level (
     .audio_ready(audio_sample_ready)
   );
 
-  // Playback audio to headphones
-
-  logic [15:0] playback_audio;
-
-  always_comb begin
-    if (sw[0])
-      playback_audio = mic_audio_data[0];
-    else if (sw[1])
-      playback_audio = mic_audio_data[1];
-    else if (sw[2])
-      playback_audio = mic_audio_data[2];
-    else if (sw[3])
-      playback_audio = mic_audio_data[3];
-  end
-
-  logic audio_out;
-  pdm my_pdm(
-    .clk_in(clk_m),
-    .rst_in(sys_rst),
-    .level_in(playback_audio),
-    .pdm_out(audio_out)
-  );
-
-  assign spkl = audio_out;
-  assign spkr = audio_out;
-
   /////////////////////////////////////
   // Calculate FFT of the audio data //
   /////////////////////////////////////
@@ -124,7 +98,6 @@ module top_level (
 
   xfft_0 xfft_0_inst (
     .aclk(clk_m),
-    // TODO: Use multiple microphones
     .s_axis_data_tdata({16'b0, hanning_windowed_audio_data[3], 16'b0, hanning_windowed_audio_data[2], 16'b0, hanning_windowed_audio_data[1], 16'b0, hanning_windowed_audio_data[0]}), // We only have real-data
     .s_axis_data_tvalid(hanning_window_audio_valid),
     .s_axis_data_tlast(audio_counter == 511),
@@ -175,13 +148,33 @@ module top_level (
     end
   end
 
+  logic detected;
+
+  biometrics biometrics_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+    .write_enable_in(btn[1]),
+    .predict_enable_in(sw[0]),
+
+    .fft_data_in(fft_data[31:0]),
+    .fft_valid_in(fft_valid),
+    .fft_last_in(fft_last),
+    .fft_ready_out(),
+
+    .ble_uart_rx_in(ble_uart_rx),
+    .ble_uart_tx_out(ble_uart_tx),
+
+    .loudness_threshold_in({sw[15:4], 4'b0}),
+    .detected_out(detected)
+  );
+
   motor_control motor_control_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
 
     .bin(stored_bin),
     .mag(mag_out_store),
-    .recognised(1'b1),
+    .recognised(detected),
 
     .led(led[2:0]),
 
@@ -212,53 +205,6 @@ module top_level (
     .bin(stored_bin),
     .pwm_out(servo_2)
   );
-
-  // manta manta_inst (
-  //   .clk(clk_m),
-
-  //   .rx(uart_rxd),
-  //   .tx(uart_txd),
-    
-  //   .servo_bin(servo_bin),
-  //   // .bin_stored_0(prev_bin),
-  //   // .bin_stored_1(prev_bin),
-  //   .mag(mag_out_store));
-
-  // END LAB 7 STUFF
-
-  // logic [31:0] fft_data;
-  // logic fft_valid, fft_last, fft_ready;
-
-  // xfft_512 xfft_512_inst (
-  //   .aclk(clk_m),
-  //   .s_axis_data_tdata({mic_audio_data, 16'b0}),
-  //   .s_axis_data_tvalid(audio_sample_valid),
-  //   .s_axis_data_tlast(audio_counter == 511),
-  //   .s_axis_data_tready(rgb1[0]),
-  //   .s_axis_config_tdata(16'b0),
-  //   .s_axis_config_tvalid(1'b0),
-  //   .s_axis_config_tready(),
-  //   .m_axis_data_tdata(fft_data),
-  //   .m_axis_data_tvalid(fft_valid),
-  //   .m_axis_data_tlast(fft_last),
-  //   .m_axis_data_tready(fft_ready)
-  // );
-
-  // biometrics biometrics_inst (
-  //   .clk_in(clk_m),
-  //   .rst_in(sys_rst),
-  //   .write_enable_in(btn[1]),
-
-  //   .fft_data_in(fft_data),
-  //   .fft_valid_in(fft_valid),
-  //   .fft_last_in(fft_last),
-  //   .fft_ready_out(fft_ready),
-
-  //   .ble_uart_rx_in(ble_uart_rx),
-  //   .ble_uart_tx_out(ble_uart_tx),
-
-  //   .detected_out(rgb0[0])
-  // );
 
 endmodule
 
