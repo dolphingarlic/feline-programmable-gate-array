@@ -88,7 +88,7 @@ module direction_binner #(
 
             if (max_value_stage_1_buf[i] > overall_max_value) begin
                 overall_max_value = max_value_stage_1_buf[i];
-                overall_max_index = i;
+                overall_max_index = max_index_stage_1_buf[i];
             end
         end
     end
