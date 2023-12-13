@@ -19,7 +19,6 @@ module direction_binner #(
     input wire [(DATA_WIDTH / 2) - 1:0] magnitude,
 
     output logic [4:0] bin,
-    output logic [AGGREGATE_WIDTH:0] magnitude_out,
     output logic bin_valid_out,
     output logic aggregator_ready,
 
@@ -66,17 +65,43 @@ module direction_binner #(
 
     // We want to find the max-value in mag_bins
 
-    logic [AGGREGATE_WIDTH:0] max_value;
-    logic [3:0] max_index;
+    logic [AGGREGATE_WIDTH:0] max_value_stage_1 [3:0];
+    logic [AGGREGATE_WIDTH:0] max_value_stage_1_buf [3:0];
+    logic [AGGREGATE_WIDTH:0] overall_max_value;
+    logic [3:0] max_index_stage_1 [3:0];
+    logic [3:0] max_index_stage_1_buf [3:0];
+    logic [3:0] overall_max_index;
+
+    logic bin_valid;
 
     always_comb begin
-        max_value = 0;
-        for (integer i = 0; i < 16; i = i + 1) begin
-            if (mag_bins[i] > max_value) begin
-                max_value = mag_bins[i];
-                max_index = i;
+        overall_max_value = 0;
+
+        for (integer i = 0; i < 4; i = i + 1) begin
+            max_value_stage_1[i] = 0;
+            for (integer j = 4 * i; j < 4 * i + 4; j = j + 1) begin
+                if (mag_bins[j] > max_value_stage_1[i]) begin
+                    max_value_stage_1[i] = mag_bins[j];
+                    max_index_stage_1[i] = j;
+                end
+            end
+
+            if (max_value_stage_1_buf[i] > overall_max_value) begin
+                overall_max_value = max_value_stage_1_buf[i];
+                overall_max_index = i;
             end
         end
+    end
+
+    always_ff @(posedge clk_in) begin
+        // Pipeline stage 1
+        for (integer i = 0; i < 4; i = i + 1) begin
+            max_value_stage_1_buf[i] <= max_value_stage_1[i];
+            max_index_stage_1_buf[i] <= max_index_stage_1[i];
+        end
+        // Pipeline stage 2
+        bin <= overall_max_index;
+        bin_valid_out <= bin_valid;
     end
 
     // We want to add the magnitude to the correct bin
@@ -88,9 +113,7 @@ module direction_binner #(
             end
 
             counter <= 0;
-            bin_valid_out <= 0;
-            magnitude_out <= 0;
-            bin <= 0;
+            bin_valid <= 0;
         end else if (cordic_valid && counter < QUANTITY) begin
 
             for (integer i = 0; i < 8; i = i + 1) begin
@@ -107,14 +130,10 @@ module direction_binner #(
 
             counter <= counter + 1;
         end else if (counter == QUANTITY && !bin_valid_out) begin
-            bin_valid_out <= 1;
-            bin <= max_index;
-            magnitude_out <= mag_bins[max_index];
+            bin_valid <= 1;
         end else if (m_axis_tready && bin_valid_out) begin
             counter <= 0;
-            bin_valid_out <= 0;
-            bin <= 0;
-            magnitude_out <= 0;
+            bin_valid <= 0;
 
             for (integer i = 0; i < 16; i = i + 1) begin
                 mag_bins[i] <= 0;

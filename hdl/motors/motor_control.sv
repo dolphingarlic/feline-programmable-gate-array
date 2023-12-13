@@ -2,17 +2,14 @@
 `default_nettype none
 
 /**
-    Motor Control Module - Given the bin and the magnitude this module moves the cat towards the bin-
+    Motor Control Module - Given the bin this module moves the cat towards the bin-
 **/
 
-module motor_control #(
-    parameter MAG_THRESHOLD = 5000
-) (
+module motor_control (
             input wire clk_in, // at 98.304 MHz
             input wire rst_in,
 
             input wire [3:0] bin,
-            input wire [24:0] mag,
             input wire recognised,
 
             output logic [2:0] led,
@@ -48,12 +45,17 @@ module motor_control #(
     always_ff @(posedge clk_in) begin
         if (recognised) begin
             case (bin)
-                5,6,7,8,9,10,11: begin
+                3,4,5: begin
+                    speed_left <= 15'd2_949;
+                    speed_right <= 15'd2_949;
+                    led <= 3'b011;
+                end
+                6,7,8,9,10,11: begin
                     speed_left <= 15'd0;
                     speed_right <= 15'd2_949;
                     led <= 3'b001;
                 end
-                3,2,1,0,15,14,13,12: begin
+                2,1,0,15,14,13,12: begin
                     speed_left <= 15'd2_949;
                     speed_right <= 15'd0;
                     led <= 3'b010;
@@ -68,4 +70,3 @@ module motor_control #(
 
 endmodule
 `default_nettype wire
-

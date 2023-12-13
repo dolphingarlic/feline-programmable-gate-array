@@ -15,7 +15,6 @@ module localizer #(
     output logic bin_valid_out,
     output logic localizer_ready_out,
     output logic [3:0] bin_out,
-    output logic [24:0] mag_out,
 
     input wire uart_rxd,
     output logic uart_txd
@@ -87,7 +86,6 @@ module localizer #(
         .magnitude(translate_data[0][15:0]),
 
         .bin(bin),
-        .magnitude_out(mag_out),
         .bin_valid_out(bin_valid_out),
         .aggregator_ready(aggregator_ready),
 

@@ -115,7 +115,6 @@ module top_level (
 
   logic bin_valid_out;
   logic [3:0] bin;
-  logic [24:0] mag_out;
 
   localizer localizer_inst (
     .clk_in(clk_m),
@@ -128,22 +127,17 @@ module top_level (
     .localizer_ready_out(fft_ready),
     .bin_valid_out(bin_valid_out),
     .bin_out(bin),
-    .mag_out(mag_out),
 
     .uart_rxd(uart_rxd),
     .uart_txd(uart_txd)
   );
 
-  
-  logic [24:0] mag_out_store;
   logic [3:0] stored_bin;
 
   always_ff @(posedge clk_m) begin
     if (sys_rst) begin
-      mag_out_store <= 0;
       stored_bin <= 0;
     end else if (bin_valid_out) begin
-      mag_out_store <= mag_out;
       stored_bin <= bin;
     end
   end
@@ -173,7 +167,6 @@ module top_level (
     .rst_in(sys_rst),
 
     .bin(stored_bin),
-    .mag(mag_out_store),
     .recognised(detected),
 
     .led(led[2:0]),
@@ -193,7 +186,7 @@ module top_level (
     if (sys_rst) begin
       servo_bin <= 0;
     end else if (bin_valid_out) begin
-      if (mag_out > 13'd5000) begin
+      if (detected) begin
         servo_bin <= bin;
       end
     end

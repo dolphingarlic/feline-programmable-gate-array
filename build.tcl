@@ -22,7 +22,7 @@ read_verilog -sv [ glob ./hdl/biometrics/*.sv ]
 read_verilog -sv [ glob ./hdl/biometrics/feature_extractor/*.sv ]
 read_verilog -sv [ glob ./hdl/common/*.sv ]
 read_verilog -sv [ glob ./hdl/sound/*.sv ]
-read_verilog -sv [ glob ./hdl/meow/*.sv ]
+# read_verilog -sv [ glob ./hdl/meow/*.sv ]
 read_verilog [ glob ./hdl/motors/*.sv ]
 read_verilog -sv [ glob ./hdl/localization/*.sv ]
 # read in all verilog files:
