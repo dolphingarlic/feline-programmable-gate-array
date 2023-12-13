@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns/1ps
 /*
-This module was generated with Manta v0.0.5 on 09 Dec 2023 at 16:16:23 by richard
+This module was generated with Manta v0.0.5 on 12 Dec 2023 at 22:49:49 by richard
 
 If this breaks or if you've got spicy formal verification memes, contact fischerm [at] mit.edu
 
@@ -16,7 +16,8 @@ manta manta_inst (
     .rx(rx),
     .tx(tx),
     
-    .bin(bin));
+    .servo_bin(servo_bin), 
+    .mag(mag));
 
 */
 
@@ -26,7 +27,8 @@ module manta (
     input wire rx,
     output reg tx,
     
-    input wire [3:0] bin);
+    input wire [3:0] servo_bin,
+    input wire [24:0] mag);
 
 
     uart_rx #(.CLOCKS_PER_BAUD(868)) urx (
@@ -60,7 +62,8 @@ module manta (
         .user_clk(clk),
     
         // ports
-        .bin(bin),
+        .servo_bin(servo_bin),
+        .mag(mag),
     
         // input port
         .addr_i(brx_io_core_addr),
@@ -313,7 +316,8 @@ module io_core (
     input wire user_clk,
 
     // ports
-    input wire [3:0] bin,
+    input wire [3:0] servo_bin,
+    input wire [24:0] mag,
 
     // input port
     input wire [15:0] addr_i,
@@ -333,7 +337,8 @@ module io_core (
     reg strobe = 0;
 
     // input probe buffers
-    reg [3:0] bin_buf = 0;
+    reg [3:0] servo_bin_buf = 0;
+    reg [24:0] mag_buf = 0;
 
     // output probe buffers
     
@@ -347,7 +352,8 @@ module io_core (
     always @(posedge user_clk) begin
         if(strobe) begin
             // update input buffers from input probes
-            bin_buf <= bin;
+            servo_bin_buf <= servo_bin;
+            mag_buf <= mag;
 
             // update output buffers from output probes
             
@@ -362,14 +368,16 @@ module io_core (
         valid_o <= valid_i;
 
         // check if address is valid
-        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 1)) begin
+        if( (valid_i) && (addr_i >= BASE_ADDR) && (addr_i <= BASE_ADDR + 3)) begin
 
             // reads
             if(!rw_i) begin
                 case (addr_i)
                     BASE_ADDR + 0: data_o <= strobe;
 
-                    BASE_ADDR + 1: data_o <= bin_buf;
+                    BASE_ADDR + 1: data_o <= servo_bin_buf;
+                    BASE_ADDR + 2: data_o <= mag_buf[15:0];
+                    BASE_ADDR + 3: data_o <= mag_buf[24:16];
                 endcase
             end
 

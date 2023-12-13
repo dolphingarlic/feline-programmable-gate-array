@@ -19,6 +19,7 @@ module direction_binner #(
     input wire [(DATA_WIDTH / 2) - 1:0] magnitude,
 
     output logic [4:0] bin,
+    output logic [AGGREGATE_WIDTH:0] magnitude_out,
     output logic bin_valid_out,
     output logic aggregator_ready,
 
@@ -88,7 +89,7 @@ module direction_binner #(
 
             counter <= 0;
             bin_valid_out <= 0;
-            max_value = 0;
+            magnitude_out <= 0;
             bin <= 0;
         end else if (cordic_valid && counter < QUANTITY) begin
 
@@ -108,10 +109,12 @@ module direction_binner #(
         end else if (counter == QUANTITY && !bin_valid_out) begin
             bin_valid_out <= 1;
             bin <= max_index;
+            magnitude_out <= mag_bins[max_index];
         end else if (m_axis_tready && bin_valid_out) begin
             counter <= 0;
             bin_valid_out <= 0;
             bin <= 0;
+            magnitude_out <= 0;
 
             for (integer i = 0; i < 16; i = i + 1) begin
                 mag_bins[i] <= 0;

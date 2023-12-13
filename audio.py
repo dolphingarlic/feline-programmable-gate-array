@@ -82,9 +82,22 @@ while True:
     #     mag_bin_15,
     # ]
 
-    audio_bin = m.io_core.bin.get()
+    # audio_bin = m.io_core.bin.get()
+    mag = m.io_core.mag.get()
 
-    print(audio_bin)
+    # print((audio_bin, mag))
+
+    servo_bin = m.io_core.servo_bin.get()
+    # bin_stored_0 = m.io_core.bin_stored_0.get()
+    # bin_stored_1 = m.io_core.bin_stored_1.get()
+
+    print((servo_bin, mag))
+
+    # counter = m.io_core.bin_count.get()
+
+    # print(counter)
+
+    # print(audio_bin)
 
     # val_store.pop(0)
     # val_store.append(audio_bin)

@@ -23,7 +23,8 @@ module top_level (
 
   output logic servo_0,
   output logic servo_1,
-  output logic servo_2
+  output logic servo_2,
+  output logic servo_3
 );
 
   // Global reset
@@ -141,6 +142,7 @@ module top_level (
 
   logic bin_valid_out;
   logic [3:0] bin;
+  logic [24:0] mag_out;
 
   localizer localizer_inst (
     .clk_in(clk_m),
@@ -153,22 +155,44 @@ module top_level (
     .localizer_ready_out(fft_ready),
     .bin_valid_out(bin_valid_out),
     .bin_out(bin),
+    .mag_out(mag_out),
 
     .uart_rxd(uart_rxd),
     .uart_txd(uart_txd)
   );
 
-  logic [3:0] bin_store [1:0];
+  
+  logic [24:0] mag_out_store;
+  logic [3:0] stored_bin;
 
   always_ff @(posedge clk_m) begin
     if (sys_rst) begin
-      bin_store[0] <= 0;
-      bin_store[1] <= 0;
+      mag_out_store <= 0;
+      stored_bin <= 0;
     end else if (bin_valid_out) begin
-      bin_store[0] <= bin_store[1];
-      bin_store[1] <= bin;
+      mag_out_store <= mag_out;
+      stored_bin <= bin;
     end
   end
+
+  motor_control motor_control_inst (
+    .clk_in(clk_m),
+    .rst_in(sys_rst),
+
+    .bin(stored_bin),
+    .mag(mag_out_store),
+    .recognised(1'b1),
+
+    .led(led[2:0]),
+
+    .in1(pmoda[2]),
+    .in2(pmoda[3]),
+    .ena(servo_0),
+
+    .in3(pmoda[4]),
+    .in4(pmoda[5]),
+    .enb(servo_1)
+  );
 
   logic [3:0] servo_bin;
 
@@ -176,60 +200,29 @@ module top_level (
     if (sys_rst) begin
       servo_bin <= 0;
     end else if (bin_valid_out) begin
-      if (bin_store[0] == bin_store[1]) begin
-        servo_bin <= bin_store[0];
+      if (mag_out > 13'd5000) begin
+        servo_bin <= bin;
       end
     end
   end
 
-  // logic [21:0] left_divisor;
-  // logic [21:0] right_divisor;
-
-  // always_comb begin
-  //   case (bin)
-  //     12, 13, 14, 15, 0, 1, 2, 3: begin
-  //       left_divisor = 22'd147_456;
-  //       right_divisor = 22'd196_608;
-  //     end
-  //     4: begin
-  //       left_divisor = 22'd147_456;
-  //       right_divisor = 22'd147_456;
-  //     end
-  //     5, 6, 7, 8, 9, 10, 11: begin
-  //       left_divisor = 22'd196_608;
-  //       right_divisor = 22'd147_456;
-  //     end
-  //   endcase
-  // end
-
-  // servo_continuous left_servo (
-  //   .clk_in(clk_m),
-  //   .rst_in(sys_rst),
-  //   .divisor(left_divisor),
-  //   .pwm_out(servo_0)
-  // );
-
-  // servo_continuous right_servo (
-  //   .clk_in(clk_m),
-  //   .rst_in(sys_rst),
-  //   .divisor(right_divisor),
-  //   .pwm_out(servo_1)
-  // );
-
   servo servo_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .bin(servo_bin),
+    .bin(stored_bin),
     .pwm_out(servo_2)
   );
 
-  manta manta_inst (
-    .clk(clk_m),
+  // manta manta_inst (
+  //   .clk(clk_m),
 
-    .rx(uart_rxd),
-    .tx(uart_txd),
+  //   .rx(uart_rxd),
+  //   .tx(uart_txd),
     
-    .bin(bin));
+  //   .servo_bin(servo_bin),
+  //   // .bin_stored_0(prev_bin),
+  //   // .bin_stored_1(prev_bin),
+  //   .mag(mag_out_store));
 
   // END LAB 7 STUFF
 

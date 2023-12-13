@@ -4,7 +4,10 @@ cores:
     type: io
 
     inputs:
-      bin: 4
+      servo_bin: 4
+      # bin_stored_0: 4
+      # bin_stored_1: 4
+      mag: 25
 
 uart:
   port: "/dev/cu.usbserial-88742923012B1"

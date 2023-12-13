@@ -24,7 +24,7 @@ module servo (
 
   always_comb begin
     case (bin)
-      0: divisor = 22'd49_152; // 0 degrees
+      0,12,13,14,15: divisor = 22'd49_152; // 0 degrees
       1: divisor = 22'd72_499;
       2: divisor = 22'd95_847;
       3: divisor = 22'd119_194;
@@ -32,7 +32,7 @@ module servo (
       5: divisor = 22'd165_888;
       6: divisor = 22'd189_236;
       7: divisor = 22'd212_583;
-      8: divisor = 22'd235_930; // 180 degrees
+      8,9,10,11: divisor = 22'd235_930; // 180 degrees
       default: divisor = 22'd235_930;
     endcase
   end
