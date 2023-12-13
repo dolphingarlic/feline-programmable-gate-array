@@ -18,6 +18,7 @@ module direction_binner #(
     input wire [DATA_WIDTH - 1:0] direction,
     input wire [(DATA_WIDTH / 2) - 1:0] magnitude,
 
+    output logic [AGGREGATE_WIDTH:0] magnitude_out,
     output logic [4:0] bin,
     output logic bin_valid_out,
     output logic aggregator_ready,
@@ -102,6 +103,7 @@ module direction_binner #(
         // Pipeline stage 2
         bin <= overall_max_index;
         bin_valid_out <= bin_valid;
+        magnitude_out <= overall_max_value;
     end
 
     // We want to add the magnitude to the correct bin

@@ -115,6 +115,7 @@ module top_level (
 
   logic bin_valid_out;
   logic [3:0] bin;
+  logic [24:0] magnitude;
 
   localizer localizer_inst (
     .clk_in(clk_m),
@@ -127,18 +128,33 @@ module top_level (
     .localizer_ready_out(fft_ready),
     .bin_valid_out(bin_valid_out),
     .bin_out(bin),
+    .magnitude_out(magnitude),
 
     .uart_rxd(uart_rxd),
     .uart_txd(uart_txd)
   );
 
   logic [3:0] stored_bin;
+  logic [24:0] stored_magnitude;
 
   always_ff @(posedge clk_m) begin
     if (sys_rst) begin
       stored_bin <= 0;
     end else if (bin_valid_out) begin
       stored_bin <= bin;
+      stored_magnitude <= magnitude;
+    end
+  end
+
+  logic [3:0] threshold_bin;
+
+  always_ff @(posedge clk_m) begin
+    if (sys_rst) begin
+      threshold_bin <= 0;
+    end else if (bin_valid_out) begin
+      if (stored_magnitude > 25'd5000) begin
+        threshold_bin <= bin;
+      end
     end
   end
 
@@ -166,7 +182,7 @@ module top_level (
     .clk_in(clk_m),
     .rst_in(sys_rst),
 
-    .bin(stored_bin),
+    .bin(threshold_bin),
     .recognised(detected),
 
     .led(led[2:0]),
@@ -180,22 +196,10 @@ module top_level (
     .enb(servo_1)
   );
 
-  logic [3:0] servo_bin;
-
-  always_ff @(posedge clk_m) begin
-    if (sys_rst) begin
-      servo_bin <= 0;
-    end else if (bin_valid_out) begin
-      if (detected) begin
-        servo_bin <= bin;
-      end
-    end
-  end
-
   servo servo_inst (
     .clk_in(clk_m),
     .rst_in(sys_rst),
-    .bin(stored_bin),
+    .bin(threshold_bin),
     .pwm_out(servo_2)
   );
 
