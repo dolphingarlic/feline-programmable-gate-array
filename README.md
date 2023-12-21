@@ -12,7 +12,7 @@ To achieve this goal, we use a Xilinx Spartan-7 FPGA on a RealDigital Urbana boa
 - [x] Real-time mel-frequency cepstrum coefficient feature extraction
 - [x] Asynchronous (software-based) linear SVM training
 - [x] Real-time linear SVM-based inference
-- [ ] Real-time audio localization
-- [ ] Autonomous servomotor controls
+- [x] Real-time audio localization
+- [x] Autonomous servomotor controls
 - [x] Real-time image recognition
 - [x] Audio playback
